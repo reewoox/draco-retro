@@ -3,24 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Classement — Draco Retro</title>
+<title data-i18n-title="ladder.title">Classement — Draco Retro</title>
 <link rel="icon" href="assets/favicon.ico">
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
 <main class="form-page">
   <div class="wrap">
-    <div class="section-head"><div class="eyebrow">Classement</div><h2>Les légendes de Draco</h2><p>Les 50 personnages les plus expérimentés du serveur.</p></div>
-    <table class="table"><thead><tr><th>#</th><th>Personnage</th><th>Classe</th><th>Niveau</th><th></th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty">Chargement…</td></tr></tbody></table>
+    <div class="section-head"><div class="eyebrow" data-i18n="ladder.eyebrow"></div><h2 data-i18n="ladder.h2"></h2><p data-i18n="ladder.p"></p></div>
+    <table class="table"><thead><tr><th>#</th><th data-i18n="ladder.char"></th><th data-i18n="ladder.class"></th><th data-i18n="ladder.level"></th><th></th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty" data-i18n="loading"></td></tr></tbody></table>
   </div>
 </main>
+<script src="assets/i18n.js"></script>
 <script src="assets/site.js"></script>
 <script>
 header('classement');
-api('/api/ladder').then(rows => {
-  $('#rows').innerHTML = rows.map(p => `<tr><td class="rank">${p.rank}</td><td><span class="who"><img src="${classImg(p.class_id, p.sex)}" alt="">${esc(p.name)}</span></td><td>${esc(p.className || '')}</td><td>${p.level}</td><td>${p.online ? '<span class="dot on"></span>En ligne' : ''}</td></tr>`).join('')
-    || '<tr><td colspan="5" class="empty">Aucun aventurier pour l\'instant… sois le premier !</td></tr>';
-}).catch(() => { $('#rows').innerHTML = '<tr><td colspan="5" class="empty">Classement indisponible.</td></tr>'; });
+let ladder = null;
+function renderLadder() {
+  $('#rows').innerHTML = ladder === 'error' ? `<tr><td colspan="5" class="empty">${esc(t('ladder.error'))}</td></tr>`
+    : ladder.map(p => `<tr><td class="rank">${p.rank}</td><td><span class="who"><img src="${classImg(p.class_id, p.sex)}" alt="">${esc(p.name)}</span></td><td>${esc(className(p.class_id) || p.className || '')}</td><td>${p.level}</td><td>${p.online ? `<span class="dot on"></span>${esc(t('st.online'))}` : ''}</td></tr>`).join('')
+    || `<tr><td colspan="5" class="empty">${esc(t('ladder.empty'))}</td></tr>`;
+}
+api('/api/ladder').then(rows => { ladder = rows; renderLadder(); }).catch(() => { ladder = 'error'; renderLadder(); });
+document.addEventListener('langchange', () => { if (ladder) renderLadder(); });
 </script>
 </body>
 </html>

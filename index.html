@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Draco Retro — Serveur privé Dofus Retro</title>
+<title data-i18n-title="home.title">Draco Retro — Serveur privé Dofus Retro</title>
 <meta name="description" content="Draco Retro : serveur privé Dofus Retro gratuit. Crée ton compte, télécharge le launcher et rejoins l'aventure.">
 <link rel="icon" href="assets/favicon.ico">
 <link rel="stylesheet" href="assets/site.css">
@@ -13,18 +13,18 @@
   <section class="hero">
     <div class="wrap">
       <div>
-        <div class="eyebrow">Serveur privé Dofus Retro</div>
-        <h1>Le Monde des Douze renaît dans les <em>flammes</em></h1>
-        <p class="lead">Draco Retro, c'est le Dofus d'antan, gratuit et sans abonnement à payer. Crée ton compte, télécharge le launcher et entre dans l'aventure en quelques minutes.</p>
+        <div class="eyebrow" data-i18n="home.eyebrow"></div>
+        <h1 data-i18n-html="home.h1"></h1>
+        <p class="lead" data-i18n="home.lead"></p>
         <div class="ctas">
-          <a class="btn fire big" href="telechargement.html">⬇ Télécharger le launcher</a>
-          <a class="btn big" href="inscription.html">Créer un compte</a>
+          <a class="btn fire big" href="telechargement.html" data-i18n="cta.download"></a>
+          <a class="btn big" href="inscription.html" data-i18n="cta.register"></a>
         </div>
         <div class="strip">
-          <div><b data-status="state">…</b><span>Serveur</span></div>
-          <div><b data-status="online">—</b><span>Joueurs en ligne</span></div>
-          <div><b data-status="accounts">—</b><span>Comptes</span></div>
-          <div><b data-status="players">—</b><span>Personnages</span></div>
+          <div><b data-status="state">…</b><span data-i18n="strip.server"></span></div>
+          <div><b data-status="online">—</b><span data-i18n="strip.online"></span></div>
+          <div><b data-status="accounts">—</b><span data-i18n="strip.accounts"></span></div>
+          <div><b data-status="players">—</b><span data-i18n="strip.players"></span></div>
         </div>
       </div>
       <div class="crest"><img src="assets/logo.png" alt="Draco Retro"></div>
@@ -33,61 +33,69 @@
 
   <section id="jouer">
     <div class="wrap">
-      <div class="section-head"><div class="eyebrow">Commencer</div><h2>Prêt en trois étapes</h2><p>Aucune installation compliquée : le launcher contient le jeu, déjà configuré pour Draco.</p></div>
+      <div class="section-head"><div class="eyebrow" data-i18n="steps.eyebrow"></div><h2 data-i18n="steps.h2"></h2><p data-i18n="steps.p"></p></div>
       <div class="grid3">
-        <div class="card"><div class="step-n">01</div><h3>Crée ton compte</h3><p>Choisis un identifiant, un pseudo et un mot de passe. C'est gratuit et immédiat.</p></div>
-        <div class="card"><div class="step-n">02</div><h3>Télécharge le launcher</h3><p>Décompresse l'archive puis lance <strong>Draco</strong>. Le jeu est inclus.</p></div>
-        <div class="card"><div class="step-n">03</div><h3>Joue !</h3><p>Dans le launcher, « J'ai déjà un compte », puis <strong>JOUER</strong>. Rendez-vous à Incarnam.</p></div>
+        <div class="card"><div class="step-n">01</div><h3 data-i18n="step1.h"></h3><p data-i18n="step1.p"></p></div>
+        <div class="card"><div class="step-n">02</div><h3 data-i18n="step2.h"></h3><p data-i18n-html="step2.p"></p></div>
+        <div class="card"><div class="step-n">03</div><h3 data-i18n="step3.h"></h3><p data-i18n-html="step3.p"></p></div>
       </div>
     </div>
   </section>
 
   <section class="band">
     <div class="wrap" style="padding:34px 0">
-      <div><div class="eyebrow">Taux du serveur</div><h2>Le Retro, à ton rythme</h2></div>
+      <div><div class="eyebrow" data-i18n="rates.eyebrow"></div><h2 data-i18n="rates.h2"></h2></div>
       <div class="grid4" style="flex:1;max-width:620px">
-        <div class="rate"><b data-status="rate.xp">x1</b><span>Expérience</span></div>
-        <div class="rate"><b data-status="rate.drop">x1</b><span>Drop</span></div>
-        <div class="rate"><b data-status="rate.kamas">x1</b><span>Kamas</span></div>
-        <div class="rate"><b data-status="rate.job">x1</b><span>Métiers</span></div>
+        <div class="rate"><b data-status="rate.xp">x1</b><span data-i18n="rate.xp"></span></div>
+        <div class="rate"><b data-status="rate.drop">x1</b><span data-i18n="rate.drop"></span></div>
+        <div class="rate"><b data-status="rate.kamas">x1</b><span data-i18n="rate.kamas"></span></div>
+        <div class="rate"><b data-status="rate.job">x1</b><span data-i18n="rate.job"></span></div>
       </div>
     </div>
   </section>
 
   <section>
     <div class="wrap">
-      <div class="section-head"><div class="eyebrow">Le serveur</div><h2>Pourquoi Draco ?</h2></div>
+      <div class="section-head"><div class="eyebrow" data-i18n="why.eyebrow"></div><h2 data-i18n="why.h2"></h2></div>
       <div class="grid3">
-        <div class="card"><div class="icon">🐉</div><h3>Le Dofus d'origine</h3><p>Les cartes, les classes, les donjons et l'ambiance du Retro, sur un serveur pensé pour la communauté.</p></div>
-        <div class="card"><div class="icon">⭐</div><h3>Abonnement offert</h3><p>Tous les comptes sont abonnés : toutes les zones et toutes les fonctionnalités sont accessibles.</p></div>
-        <div class="card"><div class="icon">🖥️</div><h3>Launcher dédié</h3><p>Plusieurs comptes en un clic, l'état du serveur en direct, tes personnages d'un coup d'œil.</p></div>
+        <div class="card"><div class="icon">⭐</div><h3 data-i18n="why1.h"></h3><p data-i18n="why1.p"></p></div>
+        <div class="card"><div class="icon">⚡</div><h3 data-i18n="why2.h"></h3><p data-i18n="why2.p"></p></div>
+        <div class="card"><div class="icon">🎒</div><h3 data-i18n="why3.h"></h3><p data-i18n="why3.p"></p></div>
+        <div class="card"><div class="icon">🌀</div><h3 data-i18n="why4.h"></h3><p data-i18n="why4.p"></p></div>
+        <div class="card"><div class="icon">💎</div><h3 data-i18n="why5.h"></h3><p data-i18n="why5.p"></p></div>
+        <div class="card"><div class="icon">🐉</div><h3 data-i18n="why6.h"></h3><p data-i18n="why6.p"></p></div>
       </div>
     </div>
   </section>
 
   <section style="padding-top:0">
     <div class="wrap">
-      <div class="section-head"><div class="eyebrow">Classement</div><h2>Les légendes de Draco</h2></div>
-      <table class="table"><thead><tr><th>#</th><th>Personnage</th><th>Classe</th><th>Niveau</th></tr></thead><tbody id="top"><tr><td colspan="4" class="empty">Chargement…</td></tr></tbody></table>
-      <p style="text-align:center;margin-top:20px"><a class="btn" href="classement.html">Voir tout le classement</a></p>
+      <div class="section-head"><div class="eyebrow" data-i18n="ladder.eyebrow"></div><h2 data-i18n="ladder.h2"></h2></div>
+      <table class="table"><thead><tr><th>#</th><th data-i18n="ladder.char"></th><th data-i18n="ladder.class"></th><th data-i18n="ladder.level"></th></tr></thead><tbody id="top"><tr><td colspan="4" class="empty" data-i18n="loading"></td></tr></tbody></table>
+      <p style="text-align:center;margin-top:20px"><a class="btn" href="classement.html" data-i18n="ladder.all"></a></p>
     </div>
   </section>
 
   <section class="band">
     <div class="wrap" style="padding:30px 0">
-      <h2>L'aventure t'attend.</h2>
-      <div class="ctas"><a class="btn fire big" href="telechargement.html">⬇ Télécharger</a><a class="btn big" href="inscription.html">Créer un compte</a></div>
+      <h2 data-i18n="end.h2"></h2>
+      <div class="ctas"><a class="btn fire big" href="telechargement.html" data-i18n="cta.download.short"></a><a class="btn big" href="inscription.html" data-i18n="cta.register"></a></div>
     </div>
   </section>
 </main>
+<script src="assets/i18n.js"></script>
 <script src="assets/site.js"></script>
 <script>
 header('index');
 liveStatus(); setInterval(liveStatus, 30000);
-api('/api/ladder').then(rows => {
-  $('#top').innerHTML = rows.slice(0, 5).map(p => `<tr><td class="rank">${p.rank}</td><td><span class="who"><img src="${classImg(p.class_id, p.sex)}" alt="">${esc(p.name)}</span></td><td>${esc(p.className || '')}</td><td>${p.level}</td></tr>`).join('')
-    || '<tr><td colspan="4" class="empty">Aucun aventurier pour l\'instant… sois le premier !</td></tr>';
-}).catch(() => { $('#top').innerHTML = '<tr><td colspan="4" class="empty">Classement indisponible.</td></tr>'; });
+let ladder = null;
+function renderLadder() {
+  $('#top').innerHTML = ladder === 'error' ? `<tr><td colspan="4" class="empty">${esc(t('ladder.error'))}</td></tr>`
+    : ladder.slice(0, 5).map(p => `<tr><td class="rank">${p.rank}</td><td><span class="who"><img src="${classImg(p.class_id, p.sex)}" alt="">${esc(p.name)}</span></td><td>${esc(className(p.class_id) || p.className || '')}</td><td>${p.level}</td></tr>`).join('')
+    || `<tr><td colspan="4" class="empty">${esc(t('ladder.empty'))}</td></tr>`;
+}
+api('/api/ladder').then(rows => { ladder = rows; renderLadder(); }).catch(() => { ladder = 'error'; renderLadder(); });
+document.addEventListener('langchange', () => { if (ladder) renderLadder(); });
 </script>
 </body>
 </html>

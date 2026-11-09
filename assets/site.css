@@ -126,3 +126,12 @@ footer .brand img{width:34px;height:34px}
 }
 @media (max-width:560px){.grid3,.grid4,.row2{grid-template-columns:1fr}section{padding:60px 0}.lead{font-size:16px}}
 @media (prefers-reduced-motion:reduce){.crest img{animation:none}canvas.embers{display:none}html{scroll-behavior:auto}}
+/* language picker */
+.langpick{display:flex;align-items:center;gap:4px;padding:0 8px;border-radius:10px;color:var(--muted);cursor:pointer;font-size:14px}
+.langpick:hover{background:rgba(230,176,74,.08);color:var(--text)}
+.langpick select{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;padding:8px 2px;outline:none}
+.langpick select option{background:#1a130f;color:var(--text)}
+@media (max-width:900px){.langpick{padding:6px 14px}}
+/* rules */
+.rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+@media (max-width:760px){.rules{grid-template-columns:1fr}}

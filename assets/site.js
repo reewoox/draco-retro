@@ -2,22 +2,26 @@
 'use strict';
 const $ = (s, root = document) => root.querySelector(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
-const fmt = n => Number(n || 0).toLocaleString('fr-FR');
+const fmt = n => Number(n || 0).toLocaleString(locale());
 
 function header(active) {
-  const links = [['index', './', 'Accueil'], ['telechargement', 'telechargement.html', 'Télécharger'], ['classement', 'classement.html', 'Classement']];
+  const links = [['index', './', 'nav.home'], ['telechargement', 'telechargement.html', 'nav.download'], ['classement', 'classement.html', 'nav.ladder'], ['reglement', 'reglement.html', 'nav.rules']];
   document.body.insertAdjacentHTML('afterbegin', `<div class="bg"></div><canvas class="embers"></canvas>
   <header class="top"><div class="wrap">
     <a class="brand" href="./"><img src="assets/logo-icon.png" alt="">DRACO</a>
     <button class="burger" aria-label="Menu">☰</button>
-    <nav class="nav">${links.map(([key, href, label]) => `<a href="${href}" class="${key === active ? 'active' : ''}">${label}</a>`).join('')}
-      <a class="btn gold nav-cta" href="inscription.html">Créer un compte</a></nav>
+    <nav class="nav">${links.map(([key, href, label]) => `<a href="${href}" class="${key === active ? 'active' : ''}" data-i18n="${label}"></a>`).join('')}
+      <label class="langpick"><span aria-hidden="true">🌐</span><select aria-label="Langue">${Object.entries(LANGS).map(([c, n]) => `<option value="${c}">${n}</option>`).join('')}</select></label>
+      <a class="btn gold nav-cta" href="inscription.html" data-i18n="nav.register"></a></nav>
   </div></header>`);
   $('.burger').onclick = () => $('.nav').classList.toggle('open');
+  const pick = $('.langpick select'); pick.value = LANG; pick.onchange = () => setLang(pick.value);
+  applyI18n();
+  document.addEventListener('langchange', () => { if (lastStatus) renderStatus(lastStatus); });
   document.body.insertAdjacentHTML('beforeend', `<footer><div class="wrap">
     <div><a class="brand" href="./"><img src="assets/logo-icon.png" alt="">DRACO RETRO</a></div>
-    <div class="fine">Serveur privé non officiel. Dofus est une marque d'Ankama Games ; ce site n'est ni affilié ni approuvé par Ankama.</div>
-    <div><a href="inscription.html">Créer un compte</a> · <a href="telechargement.html">Télécharger</a> · <a href="classement.html">Classement</a></div>
+    <div class="fine" data-i18n="foot.fine"></div>
+    <div><a href="inscription.html" data-i18n="nav.register"></a> · <a href="telechargement.html" data-i18n="nav.download"></a> · <a href="classement.html" data-i18n="nav.ladder"></a> · <a href="reglement.html" data-i18n="nav.rules"></a></div>
   </div></footer>`);
   embers();
 }
@@ -56,20 +60,23 @@ async function apiUrl(path) { return absolute(path) ? path : (await apiOrigin())
 async function api(path, options = {}) {
   const res = await fetch(await apiUrl(path), {...options, headers: {accept: 'application/json', ...(options.body ? {'content-type': 'application/json'} : {})}});
   let body = null; try { body = await res.json(); } catch {}
-  if (!res.ok) throw Object.assign(new Error(body?.message || 'Erreur ' + res.status), {errors: body?.errors, status: res.status});
+  if (!res.ok) throw Object.assign(new Error(trServer(body?.message) || t('err.http', {s: res.status})), {errors: body?.errors, status: res.status});
   return body;
 }
 
+let lastStatus = null;
+function renderStatus(s) {
+  document.querySelectorAll('[data-status]').forEach(el => {
+    const key = el.dataset.status;
+    if (key === 'state') el.innerHTML = s.error ? `<span class="dot off"></span>${esc(t('st.unavailable'))}` : `<span class="dot ${s.ready ? 'on' : 'off'}"></span>${esc(t(s.ready ? 'st.online' : 'st.offline'))}`;
+    else if (s.error) return;
+    else if (key.startsWith('rate.')) el.textContent = 'x' + (s.rates?.[key.slice(5)] ?? 1);
+    else el.textContent = key === 'name' ? s.name : fmt(s[key]);
+  });
+}
 async function liveStatus() {
-  try {
-    const s = await api('/api/status');
-    document.querySelectorAll('[data-status]').forEach(el => {
-      const key = el.dataset.status;
-      if (key === 'state') el.innerHTML = `<span class="dot ${s.ready ? 'on' : 'off'}"></span>${s.ready ? 'En ligne' : 'Hors ligne'}`;
-      else if (key.startsWith('rate.')) el.textContent = 'x' + (s.rates?.[key.slice(5)] ?? 1);
-      else el.textContent = key === 'name' ? s.name : fmt(s[key]);
-    });
-    return s;
-  } catch { document.querySelectorAll('[data-status="state"]').forEach(el => el.innerHTML = '<span class="dot off"></span>Indisponible'); }
+  try { lastStatus = await api('/api/status'); } catch { lastStatus = {error: true}; }
+  renderStatus(lastStatus);
+  return lastStatus.error ? null : lastStatus;
 }
 const classImg = (id, sex) => `assets/class-${Number(id) || 1}_${Number(sex) ? 1 : 0}.png`;
