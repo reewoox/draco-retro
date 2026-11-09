@@ -5,7 +5,7 @@ const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '
 const fmt = n => Number(n || 0).toLocaleString(locale());
 
 function header(active) {
-  const links = [['index', './', 'nav.home'], ['telechargement', 'telechargement.html', 'nav.download'], ['classement', 'classement.html', 'nav.ladder'], ['boutique', 'boutique.html', 'nav.shop'], ['reglement', 'reglement.html', 'nav.rules']];
+  const links = [['index', './', 'nav.home'], ['telechargement', 'telechargement.html', 'nav.download'], ['classement', 'classement.html', 'nav.ladder'], ['boutique', 'boutique.html', 'nav.shop'], ['actualites', 'actualites.html', 'nav.news'], ['aide', 'aide.html', 'nav.faq'], ['reglement', 'reglement.html', 'nav.rules']];
   document.body.insertAdjacentHTML('afterbegin', `<div class="bg"></div><canvas class="embers"></canvas>
   <header class="top"><div class="wrap">
     <a class="brand" href="./"><img src="assets/logo-icon.png" alt="">DRACO</a>
@@ -21,10 +21,24 @@ function header(active) {
   document.body.insertAdjacentHTML('beforeend', `<footer><div class="wrap">
     <div><a class="brand" href="./"><img src="assets/logo-icon.png" alt="">DRACO RETRO</a></div>
     <div class="fine" data-i18n="foot.fine"></div>
-    <div><a href="inscription.html" data-i18n="nav.register"></a> · <a href="telechargement.html" data-i18n="nav.download"></a> · <a href="classement.html" data-i18n="nav.ladder"></a> · <a href="reglement.html" data-i18n="nav.rules"></a></div>
+    <div><a href="inscription.html" data-i18n="nav.register"></a> · <a href="telechargement.html" data-i18n="nav.download"></a> · <a href="classement.html" data-i18n="nav.ladder"></a> · <a href="reglement.html" data-i18n="nav.rules"></a> · <a href="aide.html" data-i18n="nav.faq"></a><span id="footDiscord" hidden> · <a target="_blank" rel="noopener" data-i18n="foot.discord"></a></span></div>
   </div></footer>`);
   embers();
+  loadSiteFeed();
 }
+
+// Running event (banner under the header) and Discord link, from the site API.
+let siteFeed = null;
+function renderSiteFeed() {
+  if (!siteFeed) return;
+  document.querySelector('.event-banner')?.remove();
+  const ev = siteFeed.event;
+  if (ev && ev.until > Date.now()) document.querySelector('header.top').insertAdjacentHTML('afterend', `<div class="event-banner">${esc(t('event.banner', {label: ev.label, date: new Date(ev.until).toLocaleString(locale(), {weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'})}))}</div>`);
+  const d = $('#footDiscord'); if (d && siteFeed.discord) { d.hidden = false; d.querySelector('a').href = siteFeed.discord; }
+  document.dispatchEvent(new CustomEvent('sitefeed', {detail: siteFeed}));
+}
+async function loadSiteFeed() { try { siteFeed = await api('/api/feed'); renderSiteFeed(); } catch {} }
+document.addEventListener('langchange', renderSiteFeed);
 
 function embers() {
   const c = $('canvas.embers'); if (!c) return;

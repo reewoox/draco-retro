@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n-title="faq.title">Draco Retro</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="stylesheet" href="assets/site.css?v=1794263142">
+</head>
+<body>
+<main class="form-page">
+  <div class="wrap">
+    <div class="section-head"><div class="eyebrow" data-i18n="faq.eyebrow"></div><h2 data-i18n="faq.h2"></h2></div>
+    <div class="faq">
+      <details class="card"><summary data-i18n="faq.q1"></summary><p data-i18n="faq.a1"></p></details>
+      <details class="card"><summary data-i18n="faq.q2"></summary><p data-i18n="faq.a2"></p></details>
+      <details class="card"><summary data-i18n="faq.q3"></summary><p data-i18n="faq.a3"></p></details>
+      <details class="card"><summary data-i18n="faq.q4"></summary><p data-i18n="faq.a4"></p></details>
+      <details class="card"><summary data-i18n="faq.q5"></summary><p data-i18n="faq.a5"></p></details>
+      <details class="card"><summary data-i18n="faq.q6"></summary><p data-i18n="faq.a6"></p></details>
+      <details class="card"><summary data-i18n="faq.q7"></summary><p data-i18n="faq.a7"></p></details>
+    </div>
+    <p style="text-align:center;margin-top:24px" id="faqDiscord" hidden><a class="btn" target="_blank" rel="noopener" data-i18n="faq.more"></a></p>
+  </div>
+</main>
+<script src="assets/i18n.js?v=1794263142"></script>
+<script src="assets/site.js?v=1794263142"></script>
+<script>
+header('aide');
+document.addEventListener('sitefeed', e => { if (e.detail.discord) { $('#faqDiscord').hidden = false; $('#faqDiscord a').href = e.detail.discord; } });
+</script>
+</body>
+</html>
