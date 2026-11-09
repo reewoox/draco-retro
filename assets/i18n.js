@@ -5,6 +5,8 @@ const LANGS = {fr: 'Français', en: 'English', es: 'Español', de: 'Deutsch', it
 const LOCALES = {fr: 'fr-FR', en: 'en-GB', es: 'es-ES', de: 'de-DE', it: 'it-IT', pt: 'pt-PT'};
 const I18N = {
   fr: {
+    'faq.q8': "Puis-je jouer sur Mac ?",
+    'faq.a8': "Il n’existe pas de version Mac de Dofus Retro 1.41. Tu peux essayer la version Windows avec CrossOver (payant) ou Whisky (gratuit, Mac Apple Silicon) : crée une « bouteille » Windows 10, décompresse le launcher dedans et lance Draco. Cette méthode n’est pas testée par l’équipe.",
     'nav.news': "Actualités",
     'nav.faq': "Aide",
     'news.title': "Actualités — Draco Retro",
@@ -106,6 +108,8 @@ const I18N = {
     classes: ['Féca', 'Osamodas', 'Enutrof', 'Sram', 'Xélor', 'Ecaflip', 'Eniripsa', 'Iop', 'Crâ', 'Sadida', 'Sacrieur', 'Pandawa'],
   },
   en: {
+    'faq.q8': "Can I play on Mac?",
+    'faq.a8': "There is no Mac version of Dofus Retro 1.41. You can try the Windows version with CrossOver (paid) or Whisky (free, Apple Silicon Macs): create a Windows 10 “bottle”, extract the launcher into it and start Draco. This method is not tested by the team.",
     'nav.news': "News",
     'nav.faq': "Help",
     'news.title': "News — Draco Retro",
@@ -207,6 +211,8 @@ const I18N = {
     classes: ['Feca', 'Osamodas', 'Enutrof', 'Sram', 'Xelor', 'Ecaflip', 'Eniripsa', 'Iop', 'Cra', 'Sadida', 'Sacrier', 'Pandawa'],
   },
   es: {
+    'faq.q8': "¿Puedo jugar en Mac?",
+    'faq.a8': "No existe versión Mac de Dofus Retro 1.41. Puedes probar la versión Windows con CrossOver (de pago) o Whisky (gratis, Mac Apple Silicon): crea una «botella» Windows 10, descomprime el launcher dentro y abre Draco. El equipo no ha probado este método.",
     'nav.news': "Noticias",
     'nav.faq': "Ayuda",
     'news.title': "Noticias — Draco Retro",
@@ -308,6 +314,8 @@ const I18N = {
     classes: ['Feca', 'Osamodas', 'Anutrof', 'Sram', 'Xelor', 'Zurcarák', 'Aniripsa', 'Yopuka', 'Ocra', 'Sadida', 'Sacrógrito', 'Pandawa'],
   },
   de: {
+    'faq.q8': "Kann ich auf dem Mac spielen?",
+    'faq.a8': "Es gibt keine Mac-Version von Dofus Retro 1.41. Du kannst die Windows-Version mit CrossOver (kostenpflichtig) oder Whisky (kostenlos, Apple-Silicon-Macs) probieren: lege eine Windows-10-„Flasche“ an, entpacke den Launcher darin und starte Draco. Diese Methode ist vom Team nicht getestet.",
     'nav.news': "Neuigkeiten",
     'nav.faq': "Hilfe",
     'news.title': "Neuigkeiten — Draco Retro",
@@ -409,6 +417,8 @@ const I18N = {
     classes: ['Feca', 'Osamodas', 'Enutrof', 'Sram', 'Xelor', 'Ecaflip', 'Eniripsa', 'Iop', 'Cra', 'Sadida', 'Sacrieur', 'Pandawa'],
   },
   it: {
+    'faq.q8': "Posso giocare su Mac?",
+    'faq.a8': "Non esiste una versione Mac di Dofus Retro 1.41. Puoi provare la versione Windows con CrossOver (a pagamento) o Whisky (gratis, Mac Apple Silicon): crea una «bottiglia» Windows 10, estrai il launcher al suo interno e avvia Draco. Lo staff non ha testato questo metodo.",
     'nav.news': "Notizie",
     'nav.faq': "Aiuto",
     'news.title': "Notizie — Draco Retro",
@@ -510,6 +520,8 @@ const I18N = {
     classes: ['Feca', 'Osamodas', 'Enutrof', 'Sram', 'Xelor', 'Ecaflip', 'Eniripsa', 'Iop', 'Cra', 'Sadida', 'Sacrier', 'Pandawa'],
   },
   pt: {
+    'faq.q8': "Posso jogar no Mac?",
+    'faq.a8': "Não existe versão Mac do Dofus Retro 1.41. Podes tentar a versão Windows com o CrossOver (pago) ou o Whisky (grátis, Mac Apple Silicon): cria uma «garrafa» Windows 10, extrai o launcher lá dentro e abre o Draco. Este método não foi testado pela equipa.",
     'nav.news': "Notícias",
     'nav.faq': "Ajuda",
     'news.title': "Notícias — Draco Retro",
