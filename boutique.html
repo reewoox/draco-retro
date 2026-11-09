@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n-title="shop.title">Boutique & bourse — Draco Retro</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main class="form-page">
+  <div class="wrap">
+    <div class="section-head"><div class="eyebrow" data-i18n="shop.eyebrow"></div><h2 data-i18n="shop.h2"></h2><p data-i18n="shop.p"></p></div>
+    <div class="card" style="margin-bottom:22px">
+      <h3 data-i18n="bourse.h3"></h3>
+      <div class="grid4" id="bourseStats" style="margin:12px 0"></div>
+      <table class="table"><tbody id="bourseOffers"></tbody></table>
+      <p style="color:var(--muted);margin:12px 0 0" data-i18n-html="bourse.howTo"></p>
+    </div>
+    <div class="card">
+      <h3 data-i18n="shop.catalog"></h3>
+      <p style="color:var(--muted)" data-i18n="shop.howBuy"></p>
+      <div class="chips" id="cats"></div>
+      <div class="shop-grid" id="items"></div>
+    </div>
+  </div>
+</main>
+<script src="assets/i18n.js"></script>
+<script src="assets/site.js"></script>
+<script>
+header('boutique');
+let catalog = null, bourse = null, cat = '';
+const nf = n => Number(n || 0).toLocaleString(locale());
+function render() {
+  if (bourse) {
+    $('#bourseStats').innerHTML = `<div class="rate"><b>${bourse.last ? esc(t('bourse.perOgrine', {n: nf(bourse.last.price)})) : '—'}</b><span>${esc(t('bourse.last'))}</span></div><div class="rate"><b>${nf(bourse.onSale)}</b><span>${esc(t('bourse.onSale'))}</span></div>`;
+    $('#bourseOffers').innerHTML = bourse.offers.length ? bourse.offers.map(o => `<tr><td>${esc(t('bourse.perOgrine', {n: nf(o.price)}))}</td><td>${nf(o.quantity)} 💎</td></tr>`).join('') : `<tr><td class="empty">${esc(t('bourse.none'))}</td></tr>`;
+  }
+  if (!catalog) return;
+  if (!catalog.length) { $('#items').innerHTML = `<p class="empty">${esc(t('shop.empty'))}</p>`; return; }
+  const cats = [...new Set(catalog.map(i => i.categoryName))];
+  $('#cats').innerHTML = [['', t('shop.all')], ...cats.map(c => [c, c])].map(([v, l]) => `<button class="chip ${v === cat ? 'on' : ''}" data-cat="${esc(v)}">${esc(l)}</button>`).join('');
+  $('#items').innerHTML = catalog.filter(i => !cat || i.categoryName === cat).map(i => `<div class="shop-item"><b>${esc(i.name)}</b><small>${esc(i.categoryName)}${i.level ? ' · ' + esc(t('shop.level', {n: i.level})) : ''}</small><span class="price">${nf(i.price)} 💎</span></div>`).join('');
+}
+$('#cats').addEventListener('click', e => { const c = e.target.closest('[data-cat]'); if (c) { cat = c.dataset.cat; render(); } });
+api('/api/shop').then(r => { catalog = r; render(); }).catch(() => { catalog = []; render(); });
+api('/api/bourse').then(r => { bourse = r; render(); }).catch(() => {});
+document.addEventListener('langchange', render);
+</script>
+</body>
+</html>
