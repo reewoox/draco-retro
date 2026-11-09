@@ -68,6 +68,14 @@
     </div>
   </section>
 
+  <section style="padding-top:0" id="homeNewsBox" hidden>
+    <div class="wrap">
+      <div class="section-head"><div class="eyebrow" data-i18n="news.eyebrow"></div><h2 data-i18n="news.h2"></h2></div>
+      <div class="news-list" id="homeNews"></div>
+      <p style="text-align:center;margin-top:20px"><a class="btn" href="actualites.html" data-i18n="nav.news"></a> <a class="btn" id="homeDiscord" target="_blank" rel="noopener" hidden data-i18n="foot.discord"></a></p>
+    </div>
+  </section>
+
   <section style="padding-top:0">
     <div class="wrap">
       <div class="section-head"><div class="eyebrow" data-i18n="ladder.eyebrow"></div><h2 data-i18n="ladder.h2"></h2></div>
@@ -96,6 +104,12 @@ function renderLadder() {
 }
 api('/api/ladder').then(rows => { ladder = rows; renderLadder(); }).catch(() => { ladder = 'error'; renderLadder(); });
 document.addEventListener('langchange', () => { if (ladder) renderLadder(); });
+document.addEventListener('sitefeed', e => {
+  const f = e.detail, news = (f.news || []).slice(0, 3);
+  $('#homeNewsBox').hidden = !news.length;
+  $('#homeNews').innerHTML = news.map(n => `<article class="card news-card"><div class="news-meta"><span class="news-kind">${esc(t('news.kind.' + n.kind))}</span><span>${esc(new Date(n.date).toLocaleDateString(locale(), {day: 'numeric', month: 'long', year: 'numeric'}))}</span></div><h3>${esc(n.title)}</h3><p>${esc(n.body)}</p></article>`).join('');
+  if (f.discord) { $('#homeDiscord').hidden = false; $('#homeDiscord').href = f.discord; }
+});
 </script>
 </body>
 </html>
