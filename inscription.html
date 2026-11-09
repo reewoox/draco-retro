@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Créer un compte — Draco Retro</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main class="form-page">
+  <div class="wrap form-shell">
+    <div>
+      <div class="eyebrow">Inscription gratuite</div>
+      <h2 style="margin-top:10px">Ton aventure commence ici</h2>
+      <p style="color:var(--muted)">Ce compte te sert à te connecter au jeu et au launcher Draco.</p>
+      <div class="aside-list">
+        <div class="card"><h3>🔑 Identifiant</h3><p>C'est ce que tu tapes pour te connecter. Personne d'autre ne le voit.</p></div>
+        <div class="card"><h3>🏷️ Pseudo</h3><p>Ton nom visible par les autres joueurs (amis, guilde, messages).</p></div>
+        <div class="card"><h3>🛡️ Mot de passe</h3><p>Choisis-en un que tu n'utilises nulle part ailleurs. L'équipe ne te le demandera jamais.</p></div>
+      </div>
+    </div>
+
+    <form class="form" id="form" novalidate>
+      <div id="formBody">
+        <h1>Créer un compte</h1>
+        <div style="display:grid;gap:16px;margin-top:16px">
+          <label>Identifiant<input type="text" name="login" maxlength="20" autocomplete="username" placeholder="3 à 20 caractères : lettres, chiffres, - _" required><span class="field-err" data-for="login"></span></label>
+          <label>Pseudo<input type="text" name="pseudo" maxlength="20" placeholder="3 à 20 lettres" required><span class="field-err" data-for="pseudo"></span></label>
+          <label>E-mail<input type="email" name="email" maxlength="100" autocomplete="email" placeholder="toi@exemple.fr" required><span class="field-err" data-for="email"></span></label>
+          <div class="row2">
+            <label>Mot de passe<input type="password" name="password" maxlength="30" autocomplete="new-password" placeholder="6 à 30 caractères" required><span class="field-err" data-for="password"></span></label>
+            <label>Confirmation<input type="password" name="password_confirmation" maxlength="30" autocomplete="new-password" required><span class="field-err" data-for="password_confirmation"></span></label>
+          </div>
+          <div class="hp" aria-hidden="true"><label>Site web<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+          <label class="check"><input type="checkbox" name="accept"> <span>J'accepte le règlement du serveur : respect des autres joueurs, pas de triche ni de logiciel tiers.</span></label>
+          <span class="field-err" data-for="accept"></span>
+          <div class="alert error" id="error" hidden></div>
+          <button class="btn fire big" id="submit">Créer mon compte</button>
+          <p style="margin:0;color:var(--muted);font-size:14px;text-align:center">Déjà inscrit ? <a href="telechargement.html">Télécharge le launcher</a></p>
+        </div>
+      </div>
+      <div class="success" id="success" hidden>
+        <div class="big-check">✓</div>
+        <h1>Bienvenue, <span id="okPseudo"></span> !</h1>
+        <p style="color:#d9c8b3;margin:0">Ton compte <strong id="okLogin"></strong> est prêt.<br>Télécharge le launcher, clique sur <strong>« J'ai déjà un compte »</strong> et connecte-toi avec ton identifiant.</p>
+        <a class="btn fire big" href="telechargement.html">⬇ Télécharger le launcher</a>
+      </div>
+    </form>
+  </div>
+</main>
+<script src="assets/site.js"></script>
+<script>
+header('inscription');
+const form = $('#form');
+form.addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(form)); data.accept = form.accept.checked;
+  form.querySelectorAll('.field-err').forEach(x => x.textContent = ''); form.querySelectorAll('input').forEach(x => x.classList.remove('invalid')); $('#error').hidden = true;
+  const local = {};
+  if (data.password !== data.password_confirmation) local.password_confirmation = 'Les mots de passe ne correspondent pas';
+  if (!data.accept) local.accept = 'Accepte le règlement pour continuer';
+  if (Object.keys(local).length) return show(local);
+  $('#submit').disabled = true;
+  try {
+    const r = await api('/api/register', {method: 'POST', body: JSON.stringify(data)});
+    $('#okPseudo').textContent = r.pseudo; $('#okLogin').textContent = r.login;
+    $('#formBody').hidden = true; $('#success').hidden = false; scrollTo({top: 0});
+  } catch (error) { show(error.errors || {}, error.message); }
+  finally { $('#submit').disabled = false; }
+});
+function show(errors, message) {
+  for (const [key, text] of Object.entries(errors)) { const slot = form.querySelector(`[data-for="${key}"]`); if (slot) slot.textContent = text; form[key]?.classList?.add('invalid'); }
+  if (message && !Object.keys(errors).length) { $('#error').textContent = message; $('#error').hidden = false; }
+}
+</script>
+</body>
+</html>

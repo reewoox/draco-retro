@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Télécharger le launcher — Draco Retro</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main class="form-page">
+  <div class="wrap dl">
+    <div class="dl-box">
+      <div class="eyebrow">Launcher Draco</div>
+      <h1 style="margin:0">Télécharger le jeu</h1>
+      <p style="color:#d9c8b3;margin:0">Le launcher contient le client Dofus Retro déjà configuré pour Draco. Il gère tes comptes et lance le jeu en un clic.</p>
+      <div id="dl"><button class="btn fire big" disabled>Chargement…</button></div>
+      <div class="meta" id="meta"></div>
+      <h3 style="font-family:var(--display);color:var(--gold2);margin:10px 0 0">Installation</h3>
+      <ol class="steps">
+        <li>Télécharge l'archive <strong>.zip</strong> puis fais clic droit → <strong>Extraire tout…</strong></li>
+        <li>Ouvre le dossier et double-clique sur <strong>Draco</strong>.</li>
+        <li>Dans le launcher : <strong>« J'ai déjà un compte »</strong> (ou crée-le directement), puis <strong>JOUER</strong>.</li>
+      </ol>
+      <p style="margin:0;color:var(--muted);font-size:14px">Windows peut afficher « Windows a protégé votre ordinateur » : clique sur <em>Informations complémentaires</em> puis <em>Exécuter quand même</em>.</p>
+    </div>
+    <div class="crest"><img src="assets/logo.png" alt="Draco Retro"></div>
+  </div>
+  <div class="wrap grid3" style="margin-top:40px">
+    <div class="card"><h3>💻 Configuration</h3><p>Windows 10 ou 11, 64 bits. 2 Go de RAM, 1 Go d'espace disque.</p></div>
+    <div class="card"><h3>👥 Multi-comptes</h3><p>Coche plusieurs comptes dans le launcher : un client s'ouvre pour chacun.</p></div>
+    <div class="card"><h3>📝 Pas encore de compte ?</h3><p><a href="inscription.html">Crée-le ici</a> ou directement depuis le launcher.</p></div>
+  </div>
+</main>
+<script src="assets/site.js"></script>
+<script>
+header('telechargement');
+const size = b => b > 1e9 ? (b / 1e9).toFixed(1) + ' Go' : Math.round(b / 1e6) + ' Mo';
+api('/api/download').then(async d => {
+  if (!d.url) { $('#dl').innerHTML = '<button class="btn fire big" disabled>Bientôt disponible</button>'; $('#meta').textContent = 'Le launcher est en préparation, reviens très vite.'; return; }
+  $('#dl').innerHTML = `<a class="btn fire big" href="${esc(await apiUrl(d.url))}" download>⬇ Télécharger pour Windows</a>`;
+  $('#meta').innerHTML = [`Version ${esc(d.version || '')}`, size(d.size), d.date ? 'Mis à jour le ' + new Date(d.date).toLocaleDateString('fr-FR') : ''].filter(Boolean).map(x => `<span>${x}</span>`).join('');
+}).catch(() => { $('#dl').innerHTML = '<button class="btn fire big" disabled>Indisponible</button>'; });
+</script>
+</body>
+</html>

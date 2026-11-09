@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Classement — Draco Retro</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<main class="form-page">
+  <div class="wrap">
+    <div class="section-head"><div class="eyebrow">Classement</div><h2>Les légendes de Draco</h2><p>Les 50 personnages les plus expérimentés du serveur.</p></div>
+    <table class="table"><thead><tr><th>#</th><th>Personnage</th><th>Classe</th><th>Niveau</th><th></th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty">Chargement…</td></tr></tbody></table>
+  </div>
+</main>
+<script src="assets/site.js"></script>
+<script>
+header('classement');
+api('/api/ladder').then(rows => {
+  $('#rows').innerHTML = rows.map(p => `<tr><td class="rank">${p.rank}</td><td><span class="who"><img src="${classImg(p.class_id, p.sex)}" alt="">${esc(p.name)}</span></td><td>${esc(p.className || '')}</td><td>${p.level}</td><td>${p.online ? '<span class="dot on"></span>En ligne' : ''}</td></tr>`).join('')
+    || '<tr><td colspan="5" class="empty">Aucun aventurier pour l\'instant… sois le premier !</td></tr>';
+}).catch(() => { $('#rows').innerHTML = '<tr><td colspan="5" class="empty">Classement indisponible.</td></tr>'; });
+</script>
+</body>
+</html>
