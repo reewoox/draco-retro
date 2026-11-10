@@ -18,7 +18,9 @@
 <meta property="og:locale" content="fr_FR">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.ico">
-<link rel="stylesheet" href="assets/site.css?v=6a3b3e1ae6">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..500,0..1,0&display=block">
+<link rel="stylesheet" href="assets/site.css?v=b76074cf1a">
 </head>
 <body>
 <main class="form-page">
@@ -29,14 +31,15 @@
 </main>
 <script src="assets/i18n.js?v=e85817fd89"></script>
 <script src="assets/i18n-x.js?v=9e3d325a49"></script>
-<script src="assets/i18n-x2.js?v=1de1be2ec5"></script>
-<script src="assets/site.js?v=e5d5b39eee"></script>
+<script src="assets/i18n-x2.js?v=c330ebda9c"></script>
+<script src="assets/site.js?v=a5cfb608bf"></script>
 <script>
 header('actualites');
 let items = null;
 function render() {
   if (!items) return;
-  $('#news').innerHTML = items.map(n => `<article class="card news-card"><div class="news-meta"><span class="news-kind">${esc(t('news.kind.' + n.kind))}${n.version ? ' v' + n.version : ''}</span><span>${esc(new Date(n.date).toLocaleDateString(locale(), {day: 'numeric', month: 'long', year: 'numeric'}))}</span></div><h3>${esc(n.title)}</h3><p>${esc(n.body)}</p></article>`).join('') || `<p class="empty">${esc(t('news.empty'))}</p>`;
+  $('#news').innerHTML = items.map(n => `<article class="card news-card" id="n${Number(n.id)}" style="scroll-margin-top:90px"><div class="news-meta"><span class="news-kind">${esc(t('news.kind.' + n.kind))}${n.version ? ' v' + n.version : ''}</span><span>${esc(new Date(n.date).toLocaleDateString(locale(), {day: 'numeric', month: 'long', year: 'numeric'}))}</span></div><h3>${esc(n.title)}</h3><p>${esc(n.body)}</p></article>`).join('') || `<p class="empty">${esc(t('news.empty'))}</p>`;
+  if (/^#n\d+$/.test(location.hash)) document.getElementById(location.hash.slice(1))?.scrollIntoView();
 }
 api('/api/news').then(r => { items = r; render(); }).catch(() => { items = []; render(); });
 document.addEventListener('langchange', render);

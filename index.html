@@ -18,30 +18,50 @@
 <meta property="og:locale" content="fr_FR">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.ico">
-<link rel="stylesheet" href="assets/site.css?v=6a3b3e1ae6">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..500,0..1,0&display=block">
+<link rel="stylesheet" href="assets/site.css?v=b76074cf1a">
 </head>
 <body>
 <main>
-  <section class="hero">
-    <div class="wrap">
-      <div>
-        <div class="eyebrow" data-i18n="home.eyebrow"></div>
-        <h1 data-i18n-html="home.h1"></h1>
-        <p class="lead" data-i18n="home.lead"></p>
-        <div class="ctas">
-          <a class="btn fire big" href="telechargement.html" data-i18n="cta.download"></a>
-          <a class="btn big" href="inscription.html" data-i18n="cta.register"></a>
-        </div>
-        <div class="strip">
-          <div><b data-status="state">…</b><span data-i18n="strip.server"></span></div>
+  <div class="launch">
+    <aside class="panel launch-news">
+      <div class="panel-head"><span class="ms">newspaper</span><span data-i18n="nav.news"></span><a class="more" href="actualites.html"><span data-i18n="home.seeAll"></span><span class="ms" style="font-size:18px">chevron_right</span></a></div>
+      <div class="panel-body" id="homeNews"><p class="muted small" data-i18n="loading"></p></div>
+    </aside>
+    <div class="launch-hero">
+      <div class="eyebrow" data-i18n="home.eyebrow"></div>
+      <h1 data-i18n-html="home.h1"></h1>
+      <p class="lead" data-i18n="home.lead"></p>
+      <div class="ctas"><a class="btn fire big" href="inscription.html" id="heroCta"><span class="ms">person_add</span><span data-i18n="cta.register"></span></a><a class="btn big" href="#jouer"><span class="ms">expand_more</span><span data-i18n="home.discover"></span></a></div>
+    </div>
+    <div class="panel playbox">
+      <div class="playbox-head"><b>DRACO</b><span data-status="state">…</span></div>
+      <a class="btn fire big" href="telechargement.html" id="playBtn"><span class="ms">sports_esports</span><span data-i18n="home.play"></span></a>
+      <div class="playbox-links">
+        <a href="compte.html#comptes"><span class="ms">group</span><span data-i18n="acc.tab.accounts"></span></a>
+        <a href="compte.html#recompenses"><span class="ms">how_to_vote</span><span data-i18n="nav.vote"></span></a>
+        <a href="boutique.html"><span class="ms">shopping_cart</span><span data-i18n="nav.shop"></span></a>
+        <a href="aide.html"><span class="ms">help</span><span data-i18n="nav.faq"></span></a>
+      </div>
+    </div>
+    <aside class="launch-side">
+      <div class="panel">
+        <div class="panel-head"><span class="ms">monitoring</span><span data-i18n="strip.server"></span></div>
+        <div class="panel-body stat-grid">
           <div><b data-status="online">—</b><span data-i18n="strip.online"></span></div>
-          <div><b data-status="accounts">—</b><span data-i18n="strip.accounts"></span></div>
           <div><b data-status="players">—</b><span data-i18n="strip.players"></span></div>
+          <div><b data-status="rate.xp">—</b><span data-i18n="rate.xp"></span></div>
+          <div><b data-status="rate.drop">—</b><span data-i18n="rate.drop"></span></div>
         </div>
       </div>
-      <div class="crest"><img src="assets/logo.png" alt="Draco Retro"></div>
-    </div>
-  </section>
+      <div class="panel">
+        <div class="panel-head"><span class="ms">emoji_events</span><span data-i18n="ladder.eyebrow"></span><a class="more" href="classement.html"><span data-i18n="home.seeAll"></span><span class="ms" style="font-size:18px">chevron_right</span></a></div>
+        <div class="panel-body mini-rank" id="top"><p class="muted small" data-i18n="loading"></p></div>
+      </div>
+      <a class="panel" id="homeDiscord" target="_blank" rel="noopener" hidden style="display:flex;align-items:center;gap:12px;padding:14px 16px;color:inherit"><span class="ms" style="font-size:30px;color:#8b9cff">forum</span><span><b data-i18n="home.discord"></b><br><small class="muted" data-i18n="home.discordP"></small></span></a>
+    </aside>
+  </div>
 
   <section id="jouer">
     <div class="wrap">
@@ -95,22 +115,6 @@
     </div>
   </section>
 
-  <section style="padding-top:0" id="homeNewsBox" hidden>
-    <div class="wrap">
-      <div class="section-head"><div class="eyebrow" data-i18n="news.eyebrow"></div><h2 data-i18n="news.h2"></h2></div>
-      <div class="news-list" id="homeNews"></div>
-      <p style="text-align:center;margin-top:20px"><a class="btn" href="actualites.html" data-i18n="nav.news"></a> <a class="btn" id="homeDiscord" target="_blank" rel="noopener" hidden data-i18n="foot.discord"></a></p>
-    </div>
-  </section>
-
-  <section style="padding-top:0">
-    <div class="wrap">
-      <div class="section-head"><div class="eyebrow" data-i18n="ladder.eyebrow"></div><h2 data-i18n="ladder.h2"></h2></div>
-      <table class="table"><thead><tr><th>#</th><th data-i18n="ladder.char"></th><th data-i18n="ladder.class"></th><th data-i18n="ladder.level"></th></tr></thead><tbody id="top"><tr><td colspan="4" class="empty" data-i18n="loading"></td></tr></tbody></table>
-      <p style="text-align:center;margin-top:20px"><a class="btn" href="classement.html" data-i18n="ladder.all"></a></p>
-    </div>
-  </section>
-
   <section class="band">
     <div class="wrap" style="padding:30px 0">
       <h2 data-i18n="end.h2"></h2>
@@ -120,25 +124,30 @@
 </main>
 <script src="assets/i18n.js?v=e85817fd89"></script>
 <script src="assets/i18n-x.js?v=9e3d325a49"></script>
-<script src="assets/i18n-x2.js?v=1de1be2ec5"></script>
-<script src="assets/site.js?v=e5d5b39eee"></script>
+<script src="assets/i18n-x2.js?v=c330ebda9c"></script>
+<script src="assets/site.js?v=a5cfb608bf"></script>
 <script>
 header('index');
 liveStatus(); setInterval(liveStatus, 30000);
-let ladder = null;
+let ladder = null, feed = null;
+const MEDAL = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
 function renderLadder() {
-  $('#top').innerHTML = ladder === 'error' ? `<tr><td colspan="4" class="empty">${esc(t('ladder.error'))}</td></tr>`
-    : ladder.slice(0, 5).map(p => `<tr><td class="rank">${p.rank}</td><td><span class="who"><img src="${classImg(p.class_id, p.sex)}" alt="">${esc(p.name)}</span></td><td>${esc(className(p.class_id) || p.className || '')}</td><td>${p.level}</td></tr>`).join('')
-    || `<tr><td colspan="4" class="empty">${esc(t('ladder.empty'))}</td></tr>`;
+  $('#top').innerHTML = ladder === 'error' ? `<p class="muted small">${esc(t('ladder.error'))}</p>`
+    : ladder.slice(0, 5).map((p, i) => `<a href="classement.html"><span style="text-align:center;font-family:var(--display);color:${MEDAL[i] || 'var(--muted)'}">${i < 3 ? '<span class="ms filled">emoji_events</span>' : i + 1}</span><img src="${classImg(p.class_id, p.sex)}" alt=""><span><b>${esc(p.name)}</b><br><small>${esc(className(p.class_id))}</small></span><small>${esc(t('shop.level', {n: p.level}))}</small></a>`).join('')
+    || `<p class="muted small">${esc(t('ladder.empty'))}</p>`;
+}
+function renderNews() {
+  if (!feed) return;
+  const news = (feed.news || []).slice(0, 6);
+  $('#homeNews').innerHTML = news.length ? news.map(n => `<a class="news-tile" data-kind="${esc(n.kind)}" href="actualites.html#n${Number(n.id)}"><div class="news-cover"><span class="badge">${esc(t('news.kind.' + n.kind))}</span></div><div class="t"><b>${esc(n.title)}</b><small><span class="ms">schedule</span>${esc(new Date(n.date).toLocaleDateString(locale(), {day: 'numeric', month: 'long', year: 'numeric'}))}</small></div></a>`).join('') : `<p class="muted small">${esc(t('news.empty'))}</p>`;
+  if (feed.discord) { $('#homeDiscord').hidden = false; $('#homeDiscord').href = feed.discord; }
 }
 api('/api/ladder').then(rows => { ladder = rows; renderLadder(); }).catch(() => { ladder = 'error'; renderLadder(); });
-document.addEventListener('langchange', () => { if (ladder) renderLadder(); });
-document.addEventListener('sitefeed', e => {
-  const f = e.detail, news = (f.news || []).slice(0, 3);
-  $('#homeNewsBox').hidden = !news.length;
-  $('#homeNews').innerHTML = news.map(n => `<article class="card news-card"><div class="news-meta"><span class="news-kind">${esc(t('news.kind.' + n.kind))}</span><span>${esc(new Date(n.date).toLocaleDateString(locale(), {day: 'numeric', month: 'long', year: 'numeric'}))}</span></div><h3>${esc(n.title)}</h3><p>${esc(n.body)}</p></article>`).join('');
-  if (f.discord) { $('#homeDiscord').hidden = false; $('#homeDiscord').href = f.discord; }
-});
+document.addEventListener('langchange', () => { if (ladder) renderLadder(); renderNews(); });
+document.addEventListener('sitefeed', e => { feed = e.detail; renderNews(); });
+// Signed in: the hero button leads to the account instead of the sign-up form.
+function renderCta() { const signed = !!getToken(); $('#heroCta').href = signed ? 'compte.html' : 'inscription.html'; $('#heroCta span:last-child').textContent = t(signed ? 'nav.account' : 'cta.register'); $('#heroCta .ms').textContent = signed ? 'person' : 'person_add'; }
+document.addEventListener('session', renderCta); document.addEventListener('langchange', renderCta); renderCta();
 </script>
 </body>
 </html>

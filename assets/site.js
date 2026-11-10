@@ -19,27 +19,46 @@ const dateFmt = (ms, time = false) => ms ? new Date(Number(ms)).toLocaleString(l
 const spinner = () => `<p class="empty">${esc(t('loading'))}</p>`;
 const errorBox = e => `<div class="alert error">${esc(e?.status === 404 || e?.status === 405 ? t('x.soon') : e?.message || t('x.error'))}</div>`;
 
+// Light / dark theme (saved in this browser), applied as early as possible.
+const getTheme = () => { try { return localStorage.getItem('draco.theme') || 'dark'; } catch { return 'dark'; } };
+function setTheme(theme) { document.documentElement.dataset.theme = theme; try { localStorage.setItem('draco.theme', theme); } catch {} const b = document.querySelector('.theme-btn .ms'); if (b) b.textContent = theme === 'light' ? 'dark_mode' : 'light_mode'; }
+document.documentElement.dataset.theme = getTheme();
+
+// Launcher-style app bar: icon tabs with labels (labels hide on narrower screens, burger menu on phones).
+const NAV = [
+  ['index', './', 'home', 'nav.home'], ['telechargement', 'telechargement.html', 'download', 'nav.download'],
+  ['classement', 'classement.html', 'leaderboard', 'nav.ladder'], ['encyclopedie', 'encyclopedie.html', 'menu_book', 'nav.wiki'],
+  ['boutique', 'boutique.html', 'shopping_cart', 'nav.shop'], ['bourse', 'boutique.html#kamas', 'currency_exchange', 'nav.exchange'],
+  ['vote', 'compte.html#recompenses', 'how_to_vote', 'nav.vote'], ['evenements', 'evenements.html', 'celebration', 'nav.events'],
+  ['actualites', 'actualites.html', 'newspaper', 'nav.news'], ['aide', 'aide.html', 'help', 'nav.faq'],
+];
 function header(active) {
-  const links = [['index', './', 'nav.home'], ['telechargement', 'telechargement.html', 'nav.download'], ['classement', 'classement.html', 'nav.ladder'], ['encyclopedie', 'encyclopedie.html', 'nav.wiki'], ['boutique', 'boutique.html', 'nav.shop'], ['evenements', 'evenements.html', 'nav.events'], ['actualites', 'actualites.html', 'nav.news'], ['aide', 'aide.html', 'nav.faq']];
   document.body.insertAdjacentHTML('afterbegin', `<div class="bg"></div><canvas class="embers"></canvas>
-  <header class="top"><div class="wrap">
-    <a class="brand" href="./"><img src="assets/logo-icon.png" alt="">DRACO</a>
-    <button class="burger" aria-label="Menu">☰</button>
-    <nav class="nav">${links.map(([key, href, label]) => `<a href="${href}" class="${key === active ? 'active' : ''}" data-i18n="${label}"></a>`).join('')}
-      <label class="langpick"><span aria-hidden="true">🌐</span><select aria-label="Langue">${Object.entries(LANGS).map(([c, n]) => `<option value="${c}">${n}</option>`).join('')}</select></label>
-      <span class="nav-account"></span></nav>
+  <header class="top"><div class="bar">
+    <a class="brand" href="./" aria-label="Draco Retro"><img src="assets/logo-icon.png" alt=""><span>DRACO</span></a>
+    <button class="burger" aria-label="Menu"><span class="ms">menu</span></button>
+    <nav class="nav">
+      <div class="tabs-nav">${NAV.map(([key, href, icon, label]) => `<a href="${href}" class="tab-link ${key === active ? 'active' : ''}" data-tip="${label}"><span class="ms">${icon}</span><span class="tab-label" data-i18n="${label}"></span></a>`).join('')}</div>
+      <div class="bar-right">
+        <button class="icon-btn theme-btn" type="button" data-tip="nav.theme"><span class="ms">${getTheme() === 'light' ? 'dark_mode' : 'light_mode'}</span></button>
+        <label class="langpick"><span class="ms">language</span><select aria-label="Langue">${Object.entries(LANGS).map(([c, n]) => `<option value="${c}">${n}</option>`).join('')}</select></label>
+        <span class="nav-account"></span>
+      </div>
+    </nav>
   </div></header>`);
   const account = () => {
     $('.nav-account').innerHTML = getToken()
-      ? `<a class="btn gold nav-cta ${active === 'compte' ? 'on' : ''}" href="compte.html">👤 ${esc(t('nav.account'))}</a>`
-      : `<a href="compte.html" class="${active === 'compte' ? 'active' : ''}">${esc(t('nav.signin'))}</a><a class="btn gold nav-cta" href="inscription.html">${esc(t('nav.register'))}</a>`;
+      ? `<a class="btn gold nav-cta ${active === 'compte' ? 'on' : ''}" href="compte.html"><span class="ms">person</span>${esc(t('nav.account'))}</a>`
+      : `<a class="btn nav-cta ghost" href="compte.html"><span class="ms">login</span>${esc(t('nav.signin'))}</a><a class="btn gold nav-cta" href="inscription.html">${esc(t('nav.register'))}</a>`;
   };
-  account();
+  const tips = () => document.querySelectorAll('[data-tip]').forEach(a => { a.title = t(a.dataset.tip); });
+  account(); tips();
   document.addEventListener('session', account);
   $('.burger').onclick = () => $('.nav').classList.toggle('open');
+  $('.theme-btn').onclick = () => setTheme(getTheme() === 'light' ? 'dark' : 'light');
   const pick = $('.langpick select'); pick.value = LANG; pick.onchange = () => setLang(pick.value);
   applyI18n();
-  document.addEventListener('langchange', () => { account(); if (lastStatus) renderStatus(lastStatus); });
+  document.addEventListener('langchange', () => { account(); tips(); if (lastStatus) renderStatus(lastStatus); });
   document.body.insertAdjacentHTML('beforeend', `<footer><div class="wrap">
     <div><a class="brand" href="./"><img src="assets/logo-icon.png" alt="">DRACO RETRO</a></div>
     <div class="fine" data-i18n="foot.fine"></div>

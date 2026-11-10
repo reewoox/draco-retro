@@ -328,6 +328,26 @@ add('pt', {
   'reg.okMaster': 'A tua conta Draco <strong>{email}</strong> e a tua conta de jogo <strong>{login}</strong> estão prontas.<br>Descarrega o launcher e entra com o teu <strong>e-mail</strong>: todas as tuas contas de jogo estarão lá.',
 });
 
+// Launcher-style home and app bar.
+add('fr', {"home.seeAll": "Tout voir", "home.play": "Jouer", "home.discord": "Rejoins le Discord", "home.discordP": "Annonces, entraide et événements", "nav.exchange": "Bourse", "nav.theme": "Thème clair / sombre"});
+add('en', {"home.seeAll": "See all", "home.play": "Play", "home.discord": "Join the Discord", "home.discordP": "News, help and events", "nav.exchange": "Exchange", "nav.theme": "Light / dark theme"});
+add('es', {"home.seeAll": "Ver todo", "home.play": "Jugar", "home.discord": "Únete al Discord", "home.discordP": "Anuncios, ayuda y eventos", "nav.exchange": "Bolsa", "nav.theme": "Tema claro / oscuro"});
+add('de', {"home.seeAll": "Alle ansehen", "home.play": "Spielen", "home.discord": "Tritt dem Discord bei", "home.discordP": "Neuigkeiten, Hilfe und Events", "nav.exchange": "Börse", "nav.theme": "Helles / dunkles Design"});
+add('it', {"home.seeAll": "Vedi tutto", "home.play": "Gioca", "home.discord": "Unisciti al Discord", "home.discordP": "Annunci, aiuto ed eventi", "nav.exchange": "Borsa", "nav.theme": "Tema chiaro / scuro"});
+add('pt', {"home.seeAll": "Ver tudo", "home.play": "Jogar", "home.discord": "Junta-te ao Discord", "home.discordP": "Anúncios, ajuda e eventos", "nav.exchange": "Bolsa", "nav.theme": "Tema claro / escuro"});
+add('fr', {"rk.search": "Rechercher", "rk.membersLabel": "Membres"});
+add('en', {"rk.search": "Search", "rk.membersLabel": "Members"});
+add('es', {"rk.search": "Buscar", "rk.membersLabel": "Miembros"});
+add('de', {"rk.search": "Suchen", "rk.membersLabel": "Mitglieder"});
+add('it', {"rk.search": "Cerca", "rk.membersLabel": "Membri"});
+add('pt', {"rk.search": "Procurar", "rk.membersLabel": "Membros"});
+add('fr', {'home.discover': "Découvrir"});
+add('en', {'home.discover': "Discover"});
+add('es', {'home.discover': "Descubrir"});
+add('de', {'home.discover': "Entdecken"});
+add('it', {'home.discover': "Scopri"});
+add('pt', {'home.discover': "Descobrir"});
+
 // ---------------------------------------------------------------- player API messages (French) → other languages
 // [regex on the French message, {lang: text with $1, $2…}]
 const M = [

@@ -18,56 +18,53 @@
 <meta property="og:locale" content="fr_FR">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.ico">
-<link rel="stylesheet" href="assets/site.css?v=6a3b3e1ae6">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..500,0..1,0&display=block">
+<link rel="stylesheet" href="assets/site.css?v=b76074cf1a">
 </head>
 <body>
 <main class="form-page">
   <div class="wrap">
-    <div class="section-head"><div class="eyebrow" data-i18n="ladder.eyebrow"></div><h2 data-i18n="ladder.h2"></h2><p data-i18n="rk.p"></p></div>
+    <div class="page-head"><div><div class="eyebrow" data-i18n="ladder.eyebrow"></div><h1 data-i18n="ladder.h2"></h1><p data-i18n="rk.p"></p></div></div>
+    <div class="tabs-bar" id="kinds"></div>
     <div class="row between" style="margin-bottom:14px">
-      <div class="chips" id="kinds" style="margin:0"></div>
       <label class="row" style="color:var(--muted)" id="classBox"><span data-i18n="ladder.class"></span><select id="classPick"></select></label>
+      <label class="search"><span class="ms">search</span><input type="search" id="q" data-i18n-ph="rk.search"></label>
     </div>
-    <div class="table-wrap"><table class="table"><thead id="head"></thead><tbody id="rows"><tr><td class="empty" data-i18n="loading"></td></tr></tbody></table></div>
+    <div class="rank-list" id="rows"></div>
   </div>
 </main>
 <script src="assets/i18n.js?v=e85817fd89"></script>
 <script src="assets/i18n-x.js?v=9e3d325a49"></script>
-<script src="assets/i18n-x2.js?v=1de1be2ec5"></script>
-<script src="assets/site.js?v=e5d5b39eee"></script>
+<script src="assets/i18n-x2.js?v=c330ebda9c"></script>
+<script src="assets/site.js?v=a5cfb608bf"></script>
 <script>
 header('classement');
-const KINDS = ['level', 'xp', 'successes', 'kamas', 'honor', 'kills', 'guilds', 'votes'];
+const KINDS = ['level', 'successes', 'kamas', 'honor', 'kills', 'guilds', 'votes'];
 const NO_CLASS = ['guilds', 'votes'];
-let kind = KINDS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'level', classId = '', data = null, legacy = false;
+let kind = KINDS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'level', classId = '', data = null, legacy = false, query = '';
 function renderControls() {
-  $('#kinds').innerHTML = (legacy ? ['level'] : KINDS).map(k => `<button class="chip ${k === kind ? 'on' : ''}" data-kind="${k}">${esc(t('rk.' + k))}</button>`).join('');
+  $('#kinds').innerHTML = (legacy ? ['level'] : KINDS).map(k => `<button class="${k === kind ? 'on' : ''}" data-kind="${k}">${esc(t('rk.' + k))}</button>`).join('');
   $('#classPick').innerHTML = `<option value="">${esc(t('rk.allClasses'))}</option>` + t('classes').map((n, i) => `<option value="${i + 1}" ${String(i + 1) === classId ? 'selected' : ''}>${esc(n)}</option>`).join('');
-  $('#classBox').hidden = legacy || NO_CLASS.includes(kind);
+  $('#classBox').style.visibility = legacy || NO_CLASS.includes(kind) ? 'hidden' : '';
 }
-function valueText(r) {
-  if (kind === 'guilds') return t('rk.members', {n: fmt(r.value)});
-  if (kind === 'level') return '';
-  return fmt(r.value);
-}
+const valueLabel = () => kind === 'guilds' ? t('rk.membersLabel') : t('rk.' + (kind === 'level' ? 'xp' : kind));
 function render() {
   renderControls();
-  const guild = kind === 'guilds', votes = kind === 'votes', cols = guild ? 4 : votes ? 3 : 5;
-  $('#head').innerHTML = `<tr><th>#</th><th>${esc(t(guild ? 'rk.guild' : votes ? 'rk.player' : 'ladder.char'))}</th>${guild ? `<th>${esc(t('ladder.level'))}</th>` : votes ? '' : `<th>${esc(t('ladder.class'))}</th><th>${esc(t('ladder.level'))}</th>`}<th class="num">${kind === 'level' ? '' : esc(t('rk.' + kind))}</th></tr>`;
-  if (data === null) { $('#rows').innerHTML = `<tr><td colspan="${cols}" class="empty">${esc(t('loading'))}</td></tr>`; return; }
-  if (data === 'error') { $('#rows').innerHTML = `<tr><td colspan="${cols}" class="empty">${esc(t('ladder.error'))}</td></tr>`; return; }
-  $('#rows').innerHTML = data.map(r => `<tr><td class="rank">${r.rank}</td>
-      <td>${r.class_id ? `<span class="who"><img src="${classImg(r.class_id, r.sex)}" alt="">${esc(r.name)}${r.online ? ' <span class="dot on" title="' + esc(t('st.online')) + '"></span>' : ''}</span>` : esc(r.name)}</td>
-      ${guild ? `<td>${r.level}</td>` : votes ? '' : `<td>${esc(className(r.class_id))}</td><td>${r.level ?? ''}</td>`}
-      <td class="num">${esc(valueText(r))}</td></tr>`).join('')
-    || `<tr><td colspan="${cols}" class="empty">${esc(t('ladder.empty'))}</td></tr>`;
+  if (data === null) { $('#rows').innerHTML = spinner(); return; }
+  if (data === 'error') { $('#rows').innerHTML = `<p class="empty">${esc(t('ladder.error'))}</p>`; return; }
+  const q = query.trim().toLowerCase(), list = q ? data.filter(r => String(r.name).toLowerCase().includes(q)) : data;
+  $('#rows').innerHTML = list.map(r => `<div class="rank-row ${r.rank <= 3 ? 'top r' + r.rank : ''}">
+      <span class="pos">${r.rank <= 3 ? '<span class="ms">emoji_events</span>' : r.rank}</span>
+      ${r.class_id ? `<img src="${classImg(r.class_id, r.sex)}" alt="${esc(className(r.class_id))}" title="${esc(className(r.class_id))}">` : `<span class="ms" style="font-size:34px;color:var(--gold);justify-self:center">${kind === 'guilds' ? 'shield' : 'person'}</span>`}
+      <span class="name"><b>${esc(r.name)}${r.online ? ' <span class="dot on" title="' + esc(t('st.online')) + '"></span>' : ''}</b><small>${r.level != null ? esc(t('shop.level', {n: r.level})) : ''}${r.class_id ? ' · ' + esc(className(r.class_id)) : ''}</small></span>
+      <span class="val"><b>${fmt(kind === 'level' ? (r.xp ?? r.value) : r.value)}</b><small>${esc(kind === 'level' && r.xp == null ? t('rk.level') : valueLabel())}</small></span>
+    </div>`).join('') || `<p class="empty">${esc(t(q ? 'wiki.none' : 'ladder.empty'))}</p>`;
 }
 async function load() {
   data = null; render();
-  try {
-    const r = await x('rankings', {kind, classId: classId || undefined});
-    data = r.rows;
-  } catch (e) {
+  try { data = (await x('rankings', {kind: kind === 'level' ? 'xp' : kind, classId: classId || undefined})).rows; if (kind === 'level') data = data.map(r => ({...r, xp: r.value})); }
+  catch (e) {
     // API of the player pages not deployed yet: the classic level ladder.
     try { const rows = await api('/api/ladder'); legacy = true; kind = 'level'; data = rows.map(p => ({...p, value: p.level})); }
     catch { data = 'error'; }
@@ -76,6 +73,7 @@ async function load() {
 }
 $('#kinds').addEventListener('click', e => { const b = e.target.closest('[data-kind]'); if (!b || b.dataset.kind === kind) return; kind = b.dataset.kind; history.replaceState(null, '', '#' + kind); load(); });
 $('#classPick').onchange = e => { classId = e.target.value; load(); };
+$('#q').addEventListener('input', e => { query = e.target.value; render(); });
 document.addEventListener('langchange', render);
 load();
 </script>

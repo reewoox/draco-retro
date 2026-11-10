@@ -19,7 +19,9 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="robots" content="noindex">
 <link rel="icon" href="assets/favicon.ico">
-<link rel="stylesheet" href="assets/site.css?v=6a3b3e1ae6">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..500,0..1,0&display=block">
+<link rel="stylesheet" href="assets/site.css?v=b76074cf1a">
 <style>
 .gacc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:10px}
 .gacc-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
@@ -62,8 +64,8 @@
 </main>
 <script src="assets/i18n.js?v=e85817fd89"></script>
 <script src="assets/i18n-x.js?v=9e3d325a49"></script>
-<script src="assets/i18n-x2.js?v=1de1be2ec5"></script>
-<script src="assets/site.js?v=e5d5b39eee"></script>
+<script src="assets/i18n-x2.js?v=c330ebda9c"></script>
+<script src="assets/site.js?v=a5cfb608bf"></script>
 <script>
 header('compte');
 const TABS = ['apercu', 'comptes', 'inventaire', 'recompenses', 'historique', 'securite'];
@@ -175,7 +177,7 @@ const views = {
           <p class="muted small" style="margin:0">${esc(t('vote.p', {reward: v.reward, h: v.cooldownHours}))}</p>
           ${v.sites.length ? v.sites.map(s => { const wait = s.nextAt - Date.now(); return `<div class="vote-site"><b>${esc(s.name)}</b>${wait > 0 ? `<span class="pill">${esc(t('vote.wait', {n: Math.ceil(wait / 60000)}))}</span>` : `<button class="btn fire small" data-vote="${esc(s.id)}" data-url="${esc(s.url)}" ${accs.length ? '' : 'disabled'}>${esc(t('vote.go'))}</button>`}</div>`; }).join('') : `<p class="muted" style="margin:0">${esc(t('vote.noSites'))}</p>`}
           <div><div class="row between"><h4 style="margin:0">${esc(t('vote.tiers'))}</h4><span class="pill">${esc(t('vote.count', {n: v.votes}))}</span></div>
-            ${next ? `<div class="bar" style="margin:10px 0"><i style="width:${Math.min(100, v.votes * 100 / next.votes)}%"></i></div>` : ''}
+            ${next ? `<div class="progress" style="margin:10px 0"><i style="width:${Math.min(100, v.votes * 100 / next.votes)}%"></i></div>` : ''}
             ${v.tiers.map(tr => `<div class="tier"><span><b>${esc(t('vote.tierN', {n: tr.votes}))}</b> · ${esc(tr.reward)}</span>${tr.claimed ? `<span class="pill ok">✓ ${esc(t('vote.claimed'))}</span>` : tr.reachable ? `<button class="btn gold small" data-tier="${tr.index}">${esc(t('vote.claim'))}</button>` : `<span class="muted small">${v.votes} / ${tr.votes}</span>`}</div>`).join('')}</div>
         </div>
         <div class="card"><h3 style="margin:0 0 6px">🎡 ${esc(t('lot.h'))}</h3>
