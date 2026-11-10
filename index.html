@@ -20,7 +20,7 @@
 <link rel="icon" href="assets/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..500,0..1,0&display=block">
-<link rel="stylesheet" href="assets/site.css?v=b76074cf1a">
+<link rel="stylesheet" href="assets/site.css?v=92e0d93d54">
 </head>
 <body>
 <main>
@@ -103,6 +103,21 @@
     </div>
   </section>
 
+  <section style="padding-top:0" id="classes">
+    <div class="wrap">
+      <div class="section-head"><div class="eyebrow" data-i18n="cls.eyebrow"></div><h2 data-i18n="cls.h2"></h2><p data-i18n="cls.p"></p></div>
+      <div class="panel classes">
+        <div class="class-art"><img id="clsArt" alt=""></div>
+        <div class="class-info">
+          <div class="row between"><h3 id="clsName" style="margin:0"></h3><div class="sex-pick" id="sexPick"><button data-sex="0" class="on"><span class="ms">male</span></button><button data-sex="1"><span class="ms">female</span></button></div></div>
+          <div class="eyebrow" id="clsRole"></div>
+          <p id="clsDesc" style="margin:0"></p>
+          <div class="class-grid" id="clsGrid"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section style="padding-top:0">
     <div class="wrap">
       <div class="section-head"><div class="eyebrow" data-i18n="space.eyebrow"></div><h2 data-i18n="space.h2"></h2><p data-i18n="space.p"></p></div>
@@ -124,8 +139,8 @@
 </main>
 <script src="assets/i18n.js?v=e85817fd89"></script>
 <script src="assets/i18n-x.js?v=9e3d325a49"></script>
-<script src="assets/i18n-x2.js?v=c330ebda9c"></script>
-<script src="assets/site.js?v=a5cfb608bf"></script>
+<script src="assets/i18n-x2.js?v=0f35ec829a"></script>
+<script src="assets/site.js?v=43d1dcde55"></script>
 <script>
 header('index');
 liveStatus(); setInterval(liveStatus, 30000);
@@ -148,6 +163,18 @@ document.addEventListener('sitefeed', e => { feed = e.detail; renderNews(); });
 // Signed in: the hero button leads to the account instead of the sign-up form.
 function renderCta() { const signed = !!getToken(); $('#heroCta').href = signed ? 'compte.html' : 'inscription.html'; $('#heroCta span:last-child').textContent = t(signed ? 'nav.account' : 'cta.register'); $('#heroCta .ms').textContent = signed ? 'person' : 'person_add'; }
 document.addEventListener('session', renderCta); document.addEventListener('langchange', renderCta); renderCta();
+
+// Classes: illustrations of the game client (img/classes), picker and male / female toggle.
+let cls = 1, sex = 0;
+function renderClass() {
+  $('#clsArt').src = classArt(cls, sex); $('#clsArt').alt = className(cls);
+  $('#clsName').textContent = className(cls); $('#clsRole').textContent = t('cls.role.' + cls); $('#clsDesc').textContent = t('cls.desc.' + cls);
+  $('#clsGrid').innerHTML = Array.from({length: 12}, (_, i) => `<button class="${i + 1 === cls ? 'on' : ''}" data-cls="${i + 1}" title="${esc(className(i + 1))}"><img src="${classImg(i + 1, sex)}" alt="${esc(className(i + 1))}"></button>`).join('');
+  document.querySelectorAll('#sexPick button').forEach(b => b.classList.toggle('on', Number(b.dataset.sex) === sex));
+}
+$('#clsGrid').addEventListener('click', e => { const b = e.target.closest('[data-cls]'); if (b) { cls = Number(b.dataset.cls); renderClass(); } });
+$('#sexPick').addEventListener('click', e => { const b = e.target.closest('[data-sex]'); if (b) { sex = Number(b.dataset.sex); renderClass(); } });
+document.addEventListener('langchange', renderClass); renderClass();
 </script>
 </body>
 </html>

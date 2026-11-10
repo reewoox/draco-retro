@@ -20,7 +20,7 @@
 <link rel="icon" href="assets/favicon.ico">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..500,0..1,0&display=block">
-<link rel="stylesheet" href="assets/site.css?v=b76074cf1a">
+<link rel="stylesheet" href="assets/site.css?v=92e0d93d54">
 </head>
 <body>
 <main class="form-page">
@@ -40,8 +40,8 @@
 </main>
 <script src="assets/i18n.js?v=e85817fd89"></script>
 <script src="assets/i18n-x.js?v=9e3d325a49"></script>
-<script src="assets/i18n-x2.js?v=c330ebda9c"></script>
-<script src="assets/site.js?v=a5cfb608bf"></script>
+<script src="assets/i18n-x2.js?v=0f35ec829a"></script>
+<script src="assets/site.js?v=43d1dcde55"></script>
 <script>
 header('encyclopedie');
 const form = $('#filters');
@@ -57,7 +57,7 @@ function renderTabs() {
 function renderList() {
   if (rows === null) { $('#list').innerHTML = `<tr><td class="empty">${esc(t('loading'))}</td></tr>`; return; }
   if (rows.error) { $('#list').innerHTML = `<tr><td>${errorBox(rows.error)}</td></tr>`; return; }
-  $('#list').innerHTML = rows.map(r => `<tr class="click" data-open="${kind}-${r.id}"><td><b>${esc(r.name)}</b><br><small class="muted">${kind === 'item' ? esc(r.typeName) : (r.boss ? '👑 ' + esc(t('wiki.boss')) : r.arch ? '⭐ ' + esc(t('wiki.arch')) : '')}</small></td><td class="num muted">${esc(t('shop.level', {n: kind === 'item' ? r.level : levels(r.levels)}))}</td></tr>`).join('')
+  $('#list').innerHTML = rows.map(r => `<tr class="click" data-open="${kind}-${r.id}"><td><span class="with-icon">${kind === 'item' ? itemIcon(r.id, 40) : monsterImg(r.id, 44)}<span><b>${esc(r.name)}</b><br><small class="muted">${kind === 'item' ? esc(r.typeName) : (r.boss ? '👑 ' + esc(t('wiki.boss')) : r.arch ? '⭐ ' + esc(t('wiki.arch')) : '')}</small></span></span></td><td class="num muted">${esc(t('shop.level', {n: kind === 'item' ? r.level : levels(r.levels)}))}</td></tr>`).join('')
     || `<tr><td class="empty">${esc(t('wiki.none'))}</td></tr>`;
 }
 async function search() {
@@ -75,26 +75,33 @@ document.querySelector('.tabs-bar').addEventListener('click', e => { const b = e
 function dropTable(list, isItem) {
   if (!list.length) return `<p class="muted small">${esc(t('wiki.noDrops'))}</p>`;
   return `<div class="table-wrap"><table class="table" style="min-width:0"><thead><tr><th>${esc(t(isItem ? 'wiki.monster' : 'wiki.item'))}</th><th class="num">${esc(t('ladder.level'))}</th><th class="num">${esc(t('wiki.chance'))}</th></tr></thead><tbody>
-    ${list.map(d => `<tr class="click" data-open="${isItem ? 'monster-' + d.monster : 'item-' + d.id}"><td>${esc(d.name)}${d.prospection ? ` <small class="muted">· ${esc(t('wiki.pp', {n: d.prospection}))}</small>` : ''}</td><td class="num">${isItem ? levels(d.levels) : d.level}</td><td class="num">${d.min === d.max ? pct(d.max) : pct(d.min) + ' – ' + pct(d.max)}</td></tr>`).join('')}</tbody></table></div>`;
+    ${list.map(d => `<tr class="click" data-open="${isItem ? 'monster-' + d.monster : 'item-' + d.id}"><td><span class="with-icon">${isItem ? monsterImg(d.monster, 34) : itemIcon(d.id, 32)}<span>${esc(d.name)}</span></span>${d.prospection ? ` <small class="muted">· ${esc(t('wiki.pp', {n: d.prospection}))}</small>` : ''}</td><td class="num">${isItem ? levels(d.levels) : d.level}</td><td class="num">${d.min === d.max ? pct(d.max) : pct(d.min) + ' – ' + pct(d.max)}</td></tr>`).join('')}</tbody></table></div>`;
 }
 function renderDetail() {
   const box = $('#detail'), d = current;
-  if (!d) { box.innerHTML = `<p class="muted">${esc(t('wiki.pick'))}</p>`; return; }
+  if (!d) {
+    // Nothing picked yet: a few monsters of the bestiary (illustrations of the game).
+    const ids = Object.keys(GAME_IMAGES.monsters);
+    const pick = ids.length ? Array.from({length: 9}, (_, i) => ids[(Math.floor(ids.length / 9) * i + Math.floor(Date.now() / 6e4)) % ids.length]) : [];
+    box.innerHTML = `<p class="muted" style="margin-top:0">${esc(t('wiki.pick'))}</p>${pick.length ? `<h4>${esc(t('wiki.bestiary'))}</h4><div class="bestiary">${[...new Set(pick)].map(id => `<button data-open="monster-${id}">${monsterImg(id, 110)}</button>`).join('')}</div>` : ''}`;
+    return;
+  }
   if (d.loading) { box.innerHTML = spinner(); return; }
   if (d.error) { box.innerHTML = errorBox(d.error); return; }
   if (d.kind === 'item') {
     box.innerHTML = `<div class="stack">
-      <div><div class="eyebrow">${esc(d.typeName)}</div><h2 style="margin:6px 0 4px">${esc(d.name)}</h2><div class="row"><span class="pill">${esc(t('shop.level', {n: d.level}))}</span>${d.shopPrice ? `<span class="pill">💎 ${fmt(d.shopPrice)}</span>` : ''}<span class="muted small">${esc(t('wiki.pods', {n: fmt(d.pods)}))}${d.npcPrice ? ' · ' + esc(t('wiki.npc', {n: fmt(d.npcPrice)})) : ''}</span></div></div>
+      <div class="row" style="align-items:flex-start;gap:16px;flex-wrap:nowrap"><span class="icon-frame">${itemIcon(d.id, 72)}</span><div style="min-width:0"><div class="eyebrow">${esc(d.typeName)}</div><h2 style="margin:6px 0 4px">${esc(d.name)}</h2><div class="row"><span class="pill">${esc(t('shop.level', {n: d.level}))}</span>${d.shopPrice ? `<span class="pill">💎 ${fmt(d.shopPrice)}</span>` : ''}<span class="muted small">${esc(t('wiki.pods', {n: fmt(d.pods)}))}${d.npcPrice ? ' · ' + esc(t('wiki.npc', {n: fmt(d.npcPrice)})) : ''}</span></div></div></div>
       ${d.description ? `<p class="muted" style="margin:0">${esc(d.description)}</p>` : ''}
       ${d.effects.length ? `<div><h4>${esc(t('wiki.effects'))}</h4><ul class="effects">${d.effects.map(e => `<li>${esc(e.text)}</li>`).join('')}</ul><p class="muted small" style="margin:6px 0 0">${esc(t('wiki.perfect'))}</p></div>` : ''}
       ${d.conditions ? `<div><h4>${esc(t('wiki.conditions'))}</h4><code class="small">${esc(d.conditions)}</code></div>` : ''}
-      ${d.set ? `<div><h4>${esc(t('wiki.set', {name: d.set.name}))}</h4><div class="row">${d.set.items.map(i => `<button class="link" data-open="item-${i.id}">${esc(i.name)}</button>`).join(' · ')}</div></div>` : ''}
-      ${d.craft.length ? `<div><h4>${esc(t('wiki.craft'))}</h4><ul class="effects">${d.craft.map(c => `<li>${c.quantity} × <button class="link" data-open="item-${c.id}">${esc(c.name)}</button></li>`).join('')}</ul></div>` : ''}
+      ${d.set ? `<div><h4>${esc(t('wiki.set', {name: d.set.name}))}</h4><div class="row">${d.set.items.map(i => `<button class="link with-icon" data-open="item-${i.id}">${itemIcon(i.id, 30)}${esc(i.name)}</button>`).join('')}</div></div>` : ''}
+      ${d.craft.length ? `<div><h4>${esc(t('wiki.craft'))}</h4><ul class="effects">${d.craft.map(c => `<li class="with-icon">${itemIcon(c.id, 30)}<span>${c.quantity} × <button class="link" data-open="item-${c.id}">${esc(c.name)}</button></span></li>`).join('')}</ul></div>` : ''}
       <div><h4>${esc(t('wiki.droppedBy'))}</h4>${dropTable(d.drops, true)}</div>
       ${d.tier ? `<div class="alert info">${esc(t('wiki.tierItem', {from: d.tier.from, to: d.tier.to, chance: pct(d.tier.chance)}))}</div>` : ''}
     </div>`;
   } else {
     box.innerHTML = `<div class="stack">
+      ${GAME_IMAGES.monsters[d.id] ? `<div class="art-frame">${monsterImg(d.id, 320)}</div>` : ''}
       <div><div class="eyebrow">${esc(d.boss ? t('wiki.boss') : d.arch ? t('wiki.arch') : t('wiki.monster'))}</div><h2 style="margin:6px 0 4px">${esc(d.name)}</h2><div class="row">${d.capturable ? `<span class="pill">${esc(t('wiki.capturable'))}</span>` : ''}<span class="muted small">${esc(t('wiki.kamas', {min: fmt(d.kamas.min), max: fmt(d.kamas.max)}))}</span></div></div>
       ${d.grades.length ? `<div class="table-wrap"><table class="table" style="min-width:0"><thead><tr><th>${esc(t('wiki.grade'))}</th><th class="num">${esc(t('ladder.level'))}</th><th class="num">${esc(t('wiki.life'))}</th><th class="num">XP</th></tr></thead><tbody>${d.grades.map((g, i) => `<tr><td>${i + 1}</td><td class="num">${g.level}</td><td class="num">${fmt(g.life)}</td><td class="num">${fmt(g.xp)}</td></tr>`).join('')}</tbody></table></div>` : ''}
       <div><h4>${esc(t('wiki.drops'))}</h4>${dropTable(d.drops, false)}</div>
@@ -118,6 +125,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('langchange', () => { renderTabs(); renderList(); renderDetail(); });
 renderTabs();
+gameImages().then(() => { renderList(); renderDetail(); });
 x('itemTypes').then(r => { types = r; renderTabs(); }).catch(() => {});
 search();
 if (/^#(item|monster)-\d+$/.test(location.hash)) open(location.hash.slice(1), false);

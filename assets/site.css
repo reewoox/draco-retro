@@ -311,3 +311,28 @@ footer .brand{font-size:15px}footer .brand img{width:34px;height:34px}
 #jouer{scroll-margin-top:var(--bar)}
 :root[data-theme="light"] h1 em{background:linear-gradient(180deg,#e0782a,#a3300f);-webkit-background-clip:text;background-clip:text}
 .launch-hero h1 em{text-shadow:none;filter:drop-shadow(0 2px 8px rgba(0,0,0,.75))}:root[data-theme="light"] .launch-hero h1 em{filter:none}
+/* game images */
+.gi{object-fit:contain;flex-shrink:0;display:inline-block;vertical-align:middle}
+.gi-none{display:inline-grid;place-items:center;border-radius:10px;background:var(--panel-2);color:var(--muted)}
+.gi-none .ms{font-size:20px}
+.with-icon{display:flex;align-items:center;gap:10px}
+.art-frame{display:grid;place-items:center;min-height:200px;border-radius:12px;background:radial-gradient(circle at 50% 60%,rgba(230,176,74,.18),transparent 65%);margin-bottom:6px}
+.art-frame img{max-height:300px;filter:drop-shadow(0 10px 24px rgba(0,0,0,.5))}
+.icon-frame{display:grid;place-items:center;width:84px;height:84px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line);flex-shrink:0}
+
+/* classes */
+.classes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:24px;padding:24px;align-items:center}
+.class-art{display:grid;place-items:center;min-height:380px;border-radius:14px;background:radial-gradient(circle at 50% 65%,rgba(230,176,74,.22),transparent 62%)}
+.class-art img{max-height:420px;max-width:100%;filter:drop-shadow(0 16px 30px rgba(0,0,0,.55));animation:float 7s ease-in-out infinite}
+.class-info{display:grid;gap:12px;align-content:center}
+.class-info h3{font-family:var(--display);font-size:30px;color:var(--gold2)}
+.class-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px}
+.class-grid button,.sex-pick button{border:1px solid var(--line);background:var(--panel-2);border-radius:12px;cursor:pointer;padding:6px;color:var(--text)}
+.class-grid button img{width:100%;aspect-ratio:1;object-fit:contain}
+.class-grid button:hover,.sex-pick button:hover{border-color:var(--line-strong)}
+.class-grid button.on,.sex-pick button.on{border-color:var(--gold);background:rgba(230,176,74,.15);color:var(--gold2)}
+.sex-pick{display:flex;gap:6px}.sex-pick button{width:40px;height:38px;display:grid;place-items:center}
+@media (max-width:860px){.classes{grid-template-columns:1fr}.class-art{min-height:280px}.class-art img{max-height:300px}.class-grid{grid-template-columns:repeat(4,1fr)}}
+
+.bestiary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.bestiary button{display:grid;place-items:center;height:130px;border:1px solid var(--line);border-radius:12px;background:radial-gradient(circle at 50% 70%,rgba(230,176,74,.14),var(--panel-2) 70%);cursor:pointer}.bestiary button:hover{border-color:var(--line-strong);transform:translateY(-2px)}
+.table td.num{white-space:nowrap}

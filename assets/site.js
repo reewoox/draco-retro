@@ -136,3 +136,21 @@ async function liveStatus() {
   return lastStatus.error ? null : lastStatus;
 }
 const classImg = (id, sex) => `assets/class-${Number(id) || 1}_${Number(sex) ? 1 : 0}.png`;
+
+// Images exported from the game client (tools/game-images.py): item icons, monster and class illustrations.
+let gameImagesPromise = null;
+const GAME_IMAGES = {items: {}, monsters: {}};
+function gameImages() {
+  return gameImagesPromise ||= Promise.all(['item-icons', 'monster-gfx'].map(f => fetch(`assets/${f}.json`).then(r => r.ok ? r.json() : {}).catch(() => ({}))))
+    .then(([items, monsters]) => Object.assign(GAME_IMAGES, {items, monsters}));
+}
+/** <img> of an item icon (by item template id), or a neutral placeholder when the game has no picture for it. */
+function itemIcon(id, size = 40) {
+  const g = GAME_IMAGES.items[id];
+  return g ? `<img class="gi" src="img/items/${g}.webp" alt="" width="${size}" height="${size}" loading="lazy">` : `<span class="gi gi-none" style="width:${size}px;height:${size}px"><span class="ms">category</span></span>`;
+}
+function monsterImg(id, size = 40, cls = '') {
+  const g = GAME_IMAGES.monsters[id];
+  return g ? `<img class="gi ${cls}" src="img/monsters/${g}.webp" alt="" style="max-width:${size}px;max-height:${size}px" loading="lazy">` : `<span class="gi gi-none ${cls}" style="width:${size}px;height:${size}px"><span class="ms">pets</span></span>`;
+}
+const classArt = (id, sex) => `img/classes/${Number(id) || 1}_${Number(sex) ? 1 : 0}.webp`;
