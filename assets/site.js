@@ -43,7 +43,7 @@ function header(active) {
   document.body.insertAdjacentHTML('beforeend', `<footer><div class="wrap">
     <div><a class="brand" href="./"><img src="assets/logo-icon.png" alt="">DRACO RETRO</a></div>
     <div class="fine" data-i18n="foot.fine"></div>
-    <div class="foot-links"><a href="inscription.html" data-i18n="nav.register"></a> · <a href="telechargement.html" data-i18n="nav.download"></a> · <a href="classement.html" data-i18n="nav.ladder"></a> · <a href="encyclopedie.html" data-i18n="nav.wiki"></a> · <a href="evenements.html" data-i18n="nav.events"></a> · <a href="compte.html#recompenses" data-i18n="nav.vote"></a> · <a href="reglement.html" data-i18n="nav.rules"></a> · <a href="aide.html" data-i18n="nav.faq"></a><span id="footDiscord" hidden> · <a target="_blank" rel="noopener" data-i18n="foot.discord"></a></span></div>
+    <div class="foot-links">${getToken() ? '' : '<a href="inscription.html" data-i18n="nav.register"></a> · '}<a href="telechargement.html" data-i18n="nav.download"></a> · <a href="classement.html" data-i18n="nav.ladder"></a> · <a href="encyclopedie.html" data-i18n="nav.wiki"></a> · <a href="evenements.html" data-i18n="nav.events"></a> · <a href="compte.html#recompenses" data-i18n="nav.vote"></a> · <a href="reglement.html" data-i18n="nav.rules"></a> · <a href="aide.html" data-i18n="nav.faq"></a><span id="footDiscord" hidden> · <a target="_blank" rel="noopener" data-i18n="foot.discord"></a></span></div>
   </div></footer>`);
   applyI18n($('footer'));
   embers();
