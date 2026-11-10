@@ -4,25 +4,48 @@ const $ = (s, root = document) => root.querySelector(s);
 const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 const fmt = n => Number(n || 0).toLocaleString(locale());
 
+// Draco account session (e-mail account, site/lib/masters.mjs): token kept in this browser, shared by every page.
+const SESSION_KEY = 'draco.master';
+const getToken = () => { try { return localStorage.getItem(SESSION_KEY); } catch { return null; } };
+const setToken = v => { try { v ? localStorage.setItem(SESSION_KEY, v) : localStorage.removeItem(SESSION_KEY); } catch {} document.dispatchEvent(new CustomEvent('session')); };
+const post = (path, body) => api(path, {method: 'POST', body: JSON.stringify(body)});
+/** Player pages API (site/lib/player.mjs): public functions, or the signed-in Draco account's. A 401 ends the session. */
+async function x(name, args = {}) {
+  try { return await post('/api/x/' + name, {token: getToken() || undefined, args}); }
+  catch (error) { if (error.status === 401 && getToken()) setToken(null); throw error; }
+}
+const signInLink = () => `<a class="btn gold" href="compte.html?next=${encodeURIComponent(location.pathname.split('/').pop() + location.hash)}">${esc(t('acc.login'))}</a>`;
+const dateFmt = (ms, time = false) => ms ? new Date(Number(ms)).toLocaleString(locale(), time ? {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'} : {day: 'numeric', month: 'long', year: 'numeric'}) : '';
+const spinner = () => `<p class="empty">${esc(t('loading'))}</p>`;
+const errorBox = e => `<div class="alert error">${esc(e?.status === 404 || e?.status === 405 ? t('x.soon') : e?.message || t('x.error'))}</div>`;
+
 function header(active) {
-  const links = [['index', './', 'nav.home'], ['telechargement', 'telechargement.html', 'nav.download'], ['classement', 'classement.html', 'nav.ladder'], ['boutique', 'boutique.html', 'nav.shop'], ['actualites', 'actualites.html', 'nav.news'], ['aide', 'aide.html', 'nav.faq'], ['reglement', 'reglement.html', 'nav.rules'], ['compte', 'compte.html', 'nav.account']];
+  const links = [['index', './', 'nav.home'], ['telechargement', 'telechargement.html', 'nav.download'], ['classement', 'classement.html', 'nav.ladder'], ['encyclopedie', 'encyclopedie.html', 'nav.wiki'], ['boutique', 'boutique.html', 'nav.shop'], ['evenements', 'evenements.html', 'nav.events'], ['actualites', 'actualites.html', 'nav.news'], ['aide', 'aide.html', 'nav.faq']];
   document.body.insertAdjacentHTML('afterbegin', `<div class="bg"></div><canvas class="embers"></canvas>
   <header class="top"><div class="wrap">
     <a class="brand" href="./"><img src="assets/logo-icon.png" alt="">DRACO</a>
     <button class="burger" aria-label="Menu">☰</button>
     <nav class="nav">${links.map(([key, href, label]) => `<a href="${href}" class="${key === active ? 'active' : ''}" data-i18n="${label}"></a>`).join('')}
       <label class="langpick"><span aria-hidden="true">🌐</span><select aria-label="Langue">${Object.entries(LANGS).map(([c, n]) => `<option value="${c}">${n}</option>`).join('')}</select></label>
-      <a class="btn gold nav-cta" href="inscription.html" data-i18n="nav.register"></a></nav>
+      <span class="nav-account"></span></nav>
   </div></header>`);
+  const account = () => {
+    $('.nav-account').innerHTML = getToken()
+      ? `<a class="btn gold nav-cta ${active === 'compte' ? 'on' : ''}" href="compte.html">👤 ${esc(t('nav.account'))}</a>`
+      : `<a href="compte.html" class="${active === 'compte' ? 'active' : ''}">${esc(t('nav.signin'))}</a><a class="btn gold nav-cta" href="inscription.html">${esc(t('nav.register'))}</a>`;
+  };
+  account();
+  document.addEventListener('session', account);
   $('.burger').onclick = () => $('.nav').classList.toggle('open');
   const pick = $('.langpick select'); pick.value = LANG; pick.onchange = () => setLang(pick.value);
   applyI18n();
-  document.addEventListener('langchange', () => { if (lastStatus) renderStatus(lastStatus); });
+  document.addEventListener('langchange', () => { account(); if (lastStatus) renderStatus(lastStatus); });
   document.body.insertAdjacentHTML('beforeend', `<footer><div class="wrap">
     <div><a class="brand" href="./"><img src="assets/logo-icon.png" alt="">DRACO RETRO</a></div>
     <div class="fine" data-i18n="foot.fine"></div>
-    <div><a href="inscription.html" data-i18n="nav.register"></a> · <a href="telechargement.html" data-i18n="nav.download"></a> · <a href="classement.html" data-i18n="nav.ladder"></a> · <a href="reglement.html" data-i18n="nav.rules"></a> · <a href="aide.html" data-i18n="nav.faq"></a><span id="footDiscord" hidden> · <a target="_blank" rel="noopener" data-i18n="foot.discord"></a></span></div>
+    <div class="foot-links"><a href="inscription.html" data-i18n="nav.register"></a> · <a href="telechargement.html" data-i18n="nav.download"></a> · <a href="classement.html" data-i18n="nav.ladder"></a> · <a href="encyclopedie.html" data-i18n="nav.wiki"></a> · <a href="evenements.html" data-i18n="nav.events"></a> · <a href="compte.html#recompenses" data-i18n="nav.vote"></a> · <a href="reglement.html" data-i18n="nav.rules"></a> · <a href="aide.html" data-i18n="nav.faq"></a><span id="footDiscord" hidden> · <a target="_blank" rel="noopener" data-i18n="foot.discord"></a></span></div>
   </div></footer>`);
+  applyI18n($('footer'));
   embers();
   loadSiteFeed();
 }

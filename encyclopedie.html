@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n-title="wiki.title">Encyclopédie — Draco Retro</title>
+<meta name="description" content="Encyclopédie Draco Retro : objets, effets, recettes, panoplies, monstres et leurs drops.">
+<link rel="icon" href="assets/favicon.ico">
+<link rel="stylesheet" href="assets/site.css?v=6a3b3e1ae6">
+</head>
+<body>
+<main class="form-page">
+  <div class="wrap">
+    <div class="page-head"><div><div class="eyebrow" data-i18n="nav.wiki"></div><h1 data-i18n="wiki.h1"></h1><p data-i18n="wiki.p"></p></div></div>
+    <div class="tabs-bar"><button data-kind="item" class="on" data-i18n="wiki.items"></button><button data-kind="monster" data-i18n="wiki.monsters"></button></div>
+    <form class="row" id="filters" style="margin-bottom:16px">
+      <input type="search" name="q" data-i18n-ph="wiki.search" style="flex:1;min-width:200px" autocomplete="off">
+      <select name="type" id="typePick"></select>
+      <label class="row muted small"><span data-i18n="wiki.level"></span><input type="number" name="min" min="0" max="1000" placeholder="1" style="width:84px"> – <input type="number" name="max" min="0" max="1000" placeholder="200" style="width:84px"></label>
+    </form>
+    <div class="wiki">
+      <div class="wiki-list table-wrap"><table class="table" style="min-width:0"><tbody id="list"></tbody></table></div>
+      <div class="wiki-detail card" id="detail"><p class="muted" data-i18n="wiki.pick"></p></div>
+    </div>
+  </div>
+</main>
+<script src="assets/i18n.js?v=e85817fd89"></script>
+<script src="assets/i18n-x.js?v=9e3d325a49"></script>
+<script src="assets/site.js?v=4300f90196"></script>
+<script>
+header('encyclopedie');
+const form = $('#filters');
+let kind = 'item', rows = null, types = [], current = null, seq = 0;
+const pct = n => Number(n || 0).toLocaleString(locale(), {maximumFractionDigits: 3}) + ' %';
+const levels = l => !l?.length ? '' : Math.min(...l) === Math.max(...l) ? String(l[0]) : `${Math.min(...l)} – ${Math.max(...l)}`;
+function renderTabs() {
+  document.querySelectorAll('.tabs-bar [data-kind]').forEach(b => b.classList.toggle('on', b.dataset.kind === kind));
+  $('#typePick').hidden = kind !== 'item';
+  $('#typePick').innerHTML = `<option value="">${esc(t('wiki.allTypes'))}</option>` + types.map(ty => `<option value="${ty.id}">${esc(ty.name)}</option>`).join('');
+  $('#typePick').value = form.type.dataset.v || '';
+}
+function renderList() {
+  if (rows === null) { $('#list').innerHTML = `<tr><td class="empty">${esc(t('loading'))}</td></tr>`; return; }
+  if (rows.error) { $('#list').innerHTML = `<tr><td>${errorBox(rows.error)}</td></tr>`; return; }
+  $('#list').innerHTML = rows.map(r => `<tr class="click" data-open="${kind}-${r.id}"><td><b>${esc(r.name)}</b><br><small class="muted">${kind === 'item' ? esc(r.typeName) : (r.boss ? '👑 ' + esc(t('wiki.boss')) : r.arch ? '⭐ ' + esc(t('wiki.arch')) : '')}</small></td><td class="num muted">${esc(t('shop.level', {n: kind === 'item' ? r.level : levels(r.levels)}))}</td></tr>`).join('')
+    || `<tr><td class="empty">${esc(t('wiki.none'))}</td></tr>`;
+}
+async function search() {
+  const my = ++seq; rows = null; renderList();
+  const d = Object.fromEntries(new FormData(form));
+  try { const r = await x('search', {kind, q: d.q, type: kind === 'item' ? d.type || undefined : undefined, min: d.min || (d.q ? undefined : 1), max: d.max || undefined}); if (my === seq) rows = r.rows; }
+  catch (e) { if (my === seq) rows = {error: e}; }
+  if (my === seq) renderList();
+}
+let timer = 0;
+form.addEventListener('input', e => { if (e.target.name === 'type') form.type.dataset.v = e.target.value; clearTimeout(timer); timer = setTimeout(search, 300); });
+form.addEventListener('submit', e => { e.preventDefault(); search(); });
+document.querySelector('.tabs-bar').addEventListener('click', e => { const b = e.target.closest('[data-kind]'); if (!b || b.dataset.kind === kind) return; kind = b.dataset.kind; renderTabs(); search(); });
+
+function dropTable(list, isItem) {
+  if (!list.length) return `<p class="muted small">${esc(t('wiki.noDrops'))}</p>`;
+  return `<div class="table-wrap"><table class="table" style="min-width:0"><thead><tr><th>${esc(t(isItem ? 'wiki.monster' : 'wiki.item'))}</th><th class="num">${esc(t('ladder.level'))}</th><th class="num">${esc(t('wiki.chance'))}</th></tr></thead><tbody>
+    ${list.map(d => `<tr class="click" data-open="${isItem ? 'monster-' + d.monster : 'item-' + d.id}"><td>${esc(d.name)}${d.prospection ? ` <small class="muted">· ${esc(t('wiki.pp', {n: d.prospection}))}</small>` : ''}</td><td class="num">${isItem ? levels(d.levels) : d.level}</td><td class="num">${d.min === d.max ? pct(d.max) : pct(d.min) + ' – ' + pct(d.max)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function renderDetail() {
+  const box = $('#detail'), d = current;
+  if (!d) { box.innerHTML = `<p class="muted">${esc(t('wiki.pick'))}</p>`; return; }
+  if (d.loading) { box.innerHTML = spinner(); return; }
+  if (d.error) { box.innerHTML = errorBox(d.error); return; }
+  if (d.kind === 'item') {
+    box.innerHTML = `<div class="stack">
+      <div><div class="eyebrow">${esc(d.typeName)}</div><h2 style="margin:6px 0 4px">${esc(d.name)}</h2><div class="row"><span class="pill">${esc(t('shop.level', {n: d.level}))}</span>${d.shopPrice ? `<span class="pill">💎 ${fmt(d.shopPrice)}</span>` : ''}<span class="muted small">${esc(t('wiki.pods', {n: fmt(d.pods)}))}${d.npcPrice ? ' · ' + esc(t('wiki.npc', {n: fmt(d.npcPrice)})) : ''}</span></div></div>
+      ${d.description ? `<p class="muted" style="margin:0">${esc(d.description)}</p>` : ''}
+      ${d.effects.length ? `<div><h4>${esc(t('wiki.effects'))}</h4><ul class="effects">${d.effects.map(e => `<li>${esc(e.text)}</li>`).join('')}</ul><p class="muted small" style="margin:6px 0 0">${esc(t('wiki.perfect'))}</p></div>` : ''}
+      ${d.conditions ? `<div><h4>${esc(t('wiki.conditions'))}</h4><code class="small">${esc(d.conditions)}</code></div>` : ''}
+      ${d.set ? `<div><h4>${esc(t('wiki.set', {name: d.set.name}))}</h4><div class="row">${d.set.items.map(i => `<button class="link" data-open="item-${i.id}">${esc(i.name)}</button>`).join(' · ')}</div></div>` : ''}
+      ${d.craft.length ? `<div><h4>${esc(t('wiki.craft'))}</h4><ul class="effects">${d.craft.map(c => `<li>${c.quantity} × <button class="link" data-open="item-${c.id}">${esc(c.name)}</button></li>`).join('')}</ul></div>` : ''}
+      <div><h4>${esc(t('wiki.droppedBy'))}</h4>${dropTable(d.drops, true)}</div>
+      ${d.tier ? `<div class="alert info">${esc(t('wiki.tierItem', {from: d.tier.from, to: d.tier.to, chance: pct(d.tier.chance)}))}</div>` : ''}
+    </div>`;
+  } else {
+    box.innerHTML = `<div class="stack">
+      <div><div class="eyebrow">${esc(d.boss ? t('wiki.boss') : d.arch ? t('wiki.arch') : t('wiki.monster'))}</div><h2 style="margin:6px 0 4px">${esc(d.name)}</h2><div class="row">${d.capturable ? `<span class="pill">${esc(t('wiki.capturable'))}</span>` : ''}<span class="muted small">${esc(t('wiki.kamas', {min: fmt(d.kamas.min), max: fmt(d.kamas.max)}))}</span></div></div>
+      ${d.grades.length ? `<div class="table-wrap"><table class="table" style="min-width:0"><thead><tr><th>${esc(t('wiki.grade'))}</th><th class="num">${esc(t('ladder.level'))}</th><th class="num">${esc(t('wiki.life'))}</th><th class="num">XP</th></tr></thead><tbody>${d.grades.map((g, i) => `<tr><td>${i + 1}</td><td class="num">${g.level}</td><td class="num">${fmt(g.life)}</td><td class="num">${fmt(g.xp)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+      <div><h4>${esc(t('wiki.drops'))}</h4>${dropTable(d.drops, false)}</div>
+      ${d.tier ? `<div class="alert info">${esc(t('wiki.tierMonster', {from: d.tier.from, to: d.tier.to, chance: pct(d.tier.chance), n: fmt(d.tier.items)}))} <button class="link" data-tier="${d.tier.from}-${d.tier.to}">${esc(t('wiki.seeTier'))}</button></div>` : ''}
+    </div>`;
+  }
+}
+async function open(ref, push = true) {
+  const [k, id] = String(ref).split('-');
+  if (!['item', 'monster'].includes(k) || !Number(id)) return;
+  if (push) history.replaceState(null, '', '#' + ref);
+  current = {loading: true}; renderDetail();
+  if (innerWidth < 900) $('#detail').scrollIntoView({behavior: 'smooth', block: 'start'});
+  try { current = {kind: k, ...(await x(k, {id: Number(id)}))}; } catch (e) { current = {error: e}; }
+  renderDetail();
+}
+document.addEventListener('click', e => {
+  const o = e.target.closest('[data-open]'); if (o) return open(o.dataset.open);
+  const tier = e.target.closest('[data-tier]');
+  if (tier) { const [a, b] = tier.dataset.tier.split('-'); kind = 'item'; form.q.value = ''; form.min.value = a; form.max.value = b; renderTabs(); search(); scrollTo({top: 0, behavior: 'smooth'}); }
+});
+document.addEventListener('langchange', () => { renderTabs(); renderList(); renderDetail(); });
+renderTabs();
+x('itemTypes').then(r => { types = r; renderTabs(); }).catch(() => {});
+search();
+if (/^#(item|monster)-\d+$/.test(location.hash)) open(location.hash.slice(1), false);
+</script>
+</body>
+</html>

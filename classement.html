@@ -3,29 +3,67 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-i18n-title="ladder.title">Classement — Draco Retro</title>
+<title data-i18n-title="ladder.title">Classements — Draco Retro</title>
 <link rel="icon" href="assets/favicon.ico">
-<link rel="stylesheet" href="assets/site.css?v=ec87e2cae9">
+<link rel="stylesheet" href="assets/site.css?v=6a3b3e1ae6">
 </head>
 <body>
 <main class="form-page">
   <div class="wrap">
-    <div class="section-head"><div class="eyebrow" data-i18n="ladder.eyebrow"></div><h2 data-i18n="ladder.h2"></h2><p data-i18n="ladder.p"></p></div>
-    <table class="table"><thead><tr><th>#</th><th data-i18n="ladder.char"></th><th data-i18n="ladder.class"></th><th data-i18n="ladder.level"></th><th></th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty" data-i18n="loading"></td></tr></tbody></table>
+    <div class="section-head"><div class="eyebrow" data-i18n="ladder.eyebrow"></div><h2 data-i18n="ladder.h2"></h2><p data-i18n="rk.p"></p></div>
+    <div class="row between" style="margin-bottom:14px">
+      <div class="chips" id="kinds" style="margin:0"></div>
+      <label class="row" style="color:var(--muted)" id="classBox"><span data-i18n="ladder.class"></span><select id="classPick"></select></label>
+    </div>
+    <div class="table-wrap"><table class="table"><thead id="head"></thead><tbody id="rows"><tr><td class="empty" data-i18n="loading"></td></tr></tbody></table></div>
   </div>
 </main>
-<script src="assets/i18n.js?v=5252a209c4"></script>
-<script src="assets/site.js?v=7e13277a88"></script>
+<script src="assets/i18n.js?v=e85817fd89"></script>
+<script src="assets/i18n-x.js?v=9e3d325a49"></script>
+<script src="assets/site.js?v=4300f90196"></script>
 <script>
 header('classement');
-let ladder = null;
-function renderLadder() {
-  $('#rows').innerHTML = ladder === 'error' ? `<tr><td colspan="5" class="empty">${esc(t('ladder.error'))}</td></tr>`
-    : ladder.map(p => `<tr><td class="rank">${p.rank}</td><td><span class="who"><img src="${classImg(p.class_id, p.sex)}" alt="">${esc(p.name)}</span></td><td>${esc(className(p.class_id) || p.className || '')}</td><td>${p.level}</td><td>${p.online ? `<span class="dot on"></span>${esc(t('st.online'))}` : ''}</td></tr>`).join('')
-    || `<tr><td colspan="5" class="empty">${esc(t('ladder.empty'))}</td></tr>`;
+const KINDS = ['level', 'xp', 'successes', 'kamas', 'honor', 'kills', 'guilds', 'votes'];
+const NO_CLASS = ['guilds', 'votes'];
+let kind = KINDS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'level', classId = '', data = null, legacy = false;
+function renderControls() {
+  $('#kinds').innerHTML = (legacy ? ['level'] : KINDS).map(k => `<button class="chip ${k === kind ? 'on' : ''}" data-kind="${k}">${esc(t('rk.' + k))}</button>`).join('');
+  $('#classPick').innerHTML = `<option value="">${esc(t('rk.allClasses'))}</option>` + t('classes').map((n, i) => `<option value="${i + 1}" ${String(i + 1) === classId ? 'selected' : ''}>${esc(n)}</option>`).join('');
+  $('#classBox').hidden = legacy || NO_CLASS.includes(kind);
 }
-api('/api/ladder').then(rows => { ladder = rows; renderLadder(); }).catch(() => { ladder = 'error'; renderLadder(); });
-document.addEventListener('langchange', () => { if (ladder) renderLadder(); });
+function valueText(r) {
+  if (kind === 'guilds') return t('rk.members', {n: fmt(r.value)});
+  if (kind === 'level') return '';
+  return fmt(r.value);
+}
+function render() {
+  renderControls();
+  const guild = kind === 'guilds', votes = kind === 'votes', cols = guild ? 4 : votes ? 3 : 5;
+  $('#head').innerHTML = `<tr><th>#</th><th>${esc(t(guild ? 'rk.guild' : votes ? 'rk.player' : 'ladder.char'))}</th>${guild ? `<th>${esc(t('ladder.level'))}</th>` : votes ? '' : `<th>${esc(t('ladder.class'))}</th><th>${esc(t('ladder.level'))}</th>`}<th class="num">${kind === 'level' ? '' : esc(t('rk.' + kind))}</th></tr>`;
+  if (data === null) { $('#rows').innerHTML = `<tr><td colspan="${cols}" class="empty">${esc(t('loading'))}</td></tr>`; return; }
+  if (data === 'error') { $('#rows').innerHTML = `<tr><td colspan="${cols}" class="empty">${esc(t('ladder.error'))}</td></tr>`; return; }
+  $('#rows').innerHTML = data.map(r => `<tr><td class="rank">${r.rank}</td>
+      <td>${r.class_id ? `<span class="who"><img src="${classImg(r.class_id, r.sex)}" alt="">${esc(r.name)}${r.online ? ' <span class="dot on" title="' + esc(t('st.online')) + '"></span>' : ''}</span>` : esc(r.name)}</td>
+      ${guild ? `<td>${r.level}</td>` : votes ? '' : `<td>${esc(className(r.class_id))}</td><td>${r.level ?? ''}</td>`}
+      <td class="num">${esc(valueText(r))}</td></tr>`).join('')
+    || `<tr><td colspan="${cols}" class="empty">${esc(t('ladder.empty'))}</td></tr>`;
+}
+async function load() {
+  data = null; render();
+  try {
+    const r = await x('rankings', {kind, classId: classId || undefined});
+    data = r.rows;
+  } catch (e) {
+    // API of the player pages not deployed yet: the classic level ladder.
+    try { const rows = await api('/api/ladder'); legacy = true; kind = 'level'; data = rows.map(p => ({...p, value: p.level})); }
+    catch { data = 'error'; }
+  }
+  render();
+}
+$('#kinds').addEventListener('click', e => { const b = e.target.closest('[data-kind]'); if (!b || b.dataset.kind === kind) return; kind = b.dataset.kind; history.replaceState(null, '', '#' + kind); load(); });
+$('#classPick').onchange = e => { classId = e.target.value; load(); };
+document.addEventListener('langchange', render);
+load();
 </script>
 </body>
 </html>

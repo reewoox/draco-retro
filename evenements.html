@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n-title="ev.title">Événements — Draco Retro</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="stylesheet" href="assets/site.css?v=6a3b3e1ae6">
+</head>
+<body>
+<main class="form-page">
+  <div class="wrap stack" style="gap:22px">
+    <div class="page-head"><div><div class="eyebrow" data-i18n="nav.events"></div><h1 data-i18n="ev.h1"></h1><p data-i18n="ev.p"></p></div></div>
+    <div id="content">…</div>
+  </div>
+</main>
+<script src="assets/i18n.js?v=e85817fd89"></script>
+<script src="assets/i18n-x.js?v=9e3d325a49"></script>
+<script src="assets/site.js?v=4300f90196"></script>
+<script>
+header('evenements');
+let data = null, me = null, mine = [], msg = null;
+const left = until => { const m = Math.max(0, Math.round((until - Date.now()) / 60000)); return m >= 1440 ? t('ev.days', {n: Math.floor(m / 1440)}) : m >= 60 ? t('ev.hours', {n: Math.floor(m / 60)}) : t('ev.minutes', {n: m}); };
+function accountSelect() { return me?.accounts?.length ? `<select name="account">${me.accounts.map(a => `<option value="${a.id}">${esc(a.pseudo || a.name)} · ${fmt(a.ogrines)} 💎</option>`).join('')}</select>` : ''; }
+function render() {
+  const box = $('#content');
+  if (!data) { box.innerHTML = spinner(); return; }
+  if (data.error) { box.innerHTML = errorBox(data.error); return; }
+  const ev = data.event, sr = data.speedrush;
+  box.innerHTML = `<div class="stack" style="gap:22px">
+    ${msg ? `<div class="alert ${msg.ok ? 'ok' : 'error'}">${esc(msg.text)}</div>` : ''}
+    <div class="card">${ev ? `<div class="eyebrow">${esc(t('ev.now'))}</div><h2 style="margin:6px 0">🔥 ${esc(ev.label)}</h2><p class="muted" style="margin:0">${esc(t('ev.until', {date: dateFmt(ev.until, true), left: left(ev.until)}))}</p>`
+      : `<h3 style="margin-top:0">${esc(t('ev.noneNow'))}</h3><p class="muted" style="margin:0">${esc(t('ev.noneNowP'))}</p>`}</div>
+
+    <div class="grid2">
+      <div class="card"><h3 style="margin-top:0">📅 ${esc(t('ev.calendar'))}</h3>
+        ${data.calendar.length ? `<div class="stack">${data.calendar.map(c => `<div><div class="row between"><b>${esc(c.title)}</b><span class="pill">${esc(dateFmt(c.at, true))}${c.until ? ' → ' + esc(dateFmt(c.until, true)) : ''}</span></div>${c.text ? `<p class="muted small" style="margin:4px 0 0;white-space:pre-wrap">${esc(c.text)}</p>` : ''}</div>`).join('')}</div>` : `<p class="muted" style="margin:0">${esc(t('ev.noCalendar'))}</p>`}
+      </div>
+      <div class="card"><h3 style="margin-top:0">⚡ ${esc(t('ev.speedrush'))}</h3>
+        ${sr ? `<p style="margin:0 0 8px"><b>${esc(sr.label)}</b> <span class="pill ${sr.running ? 'ok' : ''}">${esc(t(sr.running ? 'ev.running' : 'ev.finished'))}</span></p>
+          <p class="muted small" style="margin:0 0 10px">${esc(t('ev.srDates', {from: dateFmt(sr.start, true)}))}${sr.end ? ' → ' + esc(dateFmt(sr.end, true)) : ''}${sr.rewards ? '<br>🎁 ' + esc(sr.rewards) : ''}</p>
+          ${sr.ranking.length ? `<table class="table"><tbody>${sr.ranking.slice(0, 10).map(r => `<tr><td class="rank">${r.rank}</td><td><span class="who"><img src="${classImg(r.class_id, r.sex)}" alt="">${esc(r.name)}</span></td><td class="num">${esc(t('ev.xpGained', {n: fmt(r.value)}))}</td></tr>`).join('')}</tbody></table>` : `<p class="muted small">${esc(t('ev.srEmpty'))}</p>`}`
+          : `<p class="muted" style="margin:0">${esc(t('ev.noSpeedrush'))}</p>`}
+      </div>
+    </div>
+
+    <div class="card"><h3 style="margin-top:0">🎲 ${esc(t('ev.bets'))}</h3>
+      <p class="muted small" style="margin-top:0">${esc(t('ev.betsP'))}</p>
+      ${data.bets.length ? `<div class="stack">${data.bets.map(b => {
+        const pool = b.options.reduce((s, o) => s + o.total, 0);
+        const my = mine.filter(m => m.bet === b.id);
+        return `<form class="card" data-bet="${b.id}" style="background:rgba(0,0,0,.2)">
+          <div class="row between"><b>${esc(b.title)}</b><span class="pill ${b.open ? 'ok' : ''}">${esc(b.open ? t('ev.closes', {date: dateFmt(b.closes, true)}) : b.status === 'resolved' ? t('ev.resolved') : t('ev.closed'))}</span></div>
+          <div class="stack" style="gap:8px;margin:12px 0">${b.options.map(o => `<label class="row between" style="color:var(--text)"><span class="row">${b.open && me ? `<input type="radio" name="choice" value="${o.index}" required>` : ''}${b.winner === o.index && b.status === 'resolved' ? '🏆 ' : ''}${esc(o.label)}</span><span class="muted small">${fmt(o.total)} 💎 · ${esc(t('ev.bettors', {n: o.bettors}))}${pool ? ' · ' + Math.round(o.total * 100 / pool) + ' %' : ''}</span></label>`).join('')}</div>
+          ${my.length ? `<p class="small" style="margin:0 0 10px">${my.map(m => esc(t('ev.myBet', {n: fmt(m.amount), choice: b.options[m.choice]?.label || '?'})) + (m.payout != null ? ' → ' + esc(t('ev.payout', {n: fmt(m.payout)})) : '')).join('<br>')}</p>` : ''}
+          ${b.open ? (me ? `<div class="row">${accountSelect()}<input type="number" name="amount" min="10" step="10" value="100" style="width:120px" required><button class="btn gold small">${esc(t('ev.bet'))}</button></div>` : `<p class="muted small" style="margin:0">${esc(t('ev.signToBet'))}</p>`) : ''}
+        </form>`; }).join('')}</div>` : `<p class="muted" style="margin:0">${esc(t('ev.noBets'))}</p>`}
+      ${!me && data.bets.some(b => b.open) ? `<p style="margin:14px 0 0">${signInLink()}</p>` : ''}
+    </div>
+  </div>`;
+}
+async function load() {
+  try { data = await x('events'); } catch (e) { data = {error: e}; }
+  if (getToken()) {
+    try { me = await x('profile'); mine = await x('myBets'); } catch { me = null; }
+  }
+  render();
+}
+document.addEventListener('submit', async e => {
+  const f = e.target.closest('[data-bet]'); if (!f) return; e.preventDefault();
+  const d = Object.fromEntries(new FormData(f)), btn = f.querySelector('button'); btn.disabled = true;
+  try { const r = await x('bet', {bet: Number(f.dataset.bet), choice: Number(d.choice), amount: Number(d.amount), account: Number(d.account)}); mine = r.mine; msg = {ok: true, text: t('ev.betOk')}; await load(); }
+  catch (error) { msg = {ok: false, text: error.message}; render(); }
+});
+document.addEventListener('langchange', render);
+load();
+</script>
+</body>
+</html>

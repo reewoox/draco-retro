@@ -704,7 +704,8 @@ let LANG = (() => {
   return 'fr';
 })();
 function t(key, vars) {
-  const s = I18N[LANG]?.[key] ?? I18N.fr[key] ?? key;
+  // Missing translation: English for the other languages, then French (texts written first in French).
+  const s = I18N[LANG]?.[key] ?? (LANG !== 'fr' ? I18N.en[key] : undefined) ?? I18N.fr[key] ?? key;
   return vars && typeof s === 'string' ? s.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m) : s;
 }
 const locale = () => LOCALES[LANG] || 'fr-FR';

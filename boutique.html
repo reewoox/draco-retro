@@ -5,47 +5,140 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-i18n-title="shop.title">Boutique & bourse — Draco Retro</title>
 <link rel="icon" href="assets/favicon.ico">
-<link rel="stylesheet" href="assets/site.css?v=ec87e2cae9">
+<link rel="stylesheet" href="assets/site.css?v=6a3b3e1ae6">
 </head>
 <body>
 <main class="form-page">
   <div class="wrap">
-    <div class="section-head"><div class="eyebrow" data-i18n="shop.eyebrow"></div><h2 data-i18n="shop.h2"></h2><p data-i18n="shop.p"></p></div>
-    <div class="card" style="margin-bottom:22px">
-      <h3 data-i18n="bourse.h3"></h3>
-      <div class="grid4" id="bourseStats" style="margin:12px 0"></div>
-      <table class="table"><tbody id="bourseOffers"></tbody></table>
-      <p style="color:var(--muted);margin:12px 0 0" data-i18n-html="bourse.howTo"></p>
-    </div>
-    <div class="card">
-      <h3 data-i18n="shop.catalog"></h3>
-      <p style="color:var(--muted)" data-i18n="shop.howBuy"></p>
+    <div class="page-head"><div><div class="eyebrow" data-i18n="shop.eyebrow"></div><h1 data-i18n="shop.h2"></h1><p data-i18n="shop.p"></p></div></div>
+    <div id="wallet" style="margin-bottom:18px"></div>
+    <div class="tabs-bar" id="tabs"><button data-tab="shop" data-i18n="shop.catalog"></button><button data-tab="ogrines" data-i18n="bourse.h3"></button><button data-tab="kamas" data-i18n="bak.h3"></button></div>
+    <div class="alert" id="msg" hidden style="margin-bottom:16px"></div>
+    <section id="tab-shop" style="padding:0">
+      <p class="muted" id="howBuy" style="margin-top:0"></p>
       <div class="chips" id="cats"></div>
       <div class="shop-grid" id="items"></div>
-    </div>
+    </section>
+    <section id="tab-ogrines" style="padding:0"></section>
+    <section id="tab-kamas" style="padding:0"></section>
   </div>
 </main>
-<script src="assets/i18n.js?v=5252a209c4"></script>
-<script src="assets/site.js?v=7e13277a88"></script>
+<script src="assets/i18n.js?v=e85817fd89"></script>
+<script src="assets/i18n-x.js?v=9e3d325a49"></script>
+<script src="assets/site.js?v=4300f90196"></script>
 <script>
 header('boutique');
-let catalog = null, bourse = null, cat = '';
-const nf = n => Number(n || 0).toLocaleString(locale());
-function render() {
-  if (bourse) {
-    $('#bourseStats').innerHTML = `<div class="rate"><b>${bourse.last ? esc(t('bourse.perOgrine', {n: nf(bourse.last.price)})) : '—'}</b><span>${esc(t('bourse.last'))}</span></div><div class="rate"><b>${nf(bourse.onSale)}</b><span>${esc(t('bourse.onSale'))}</span></div>`;
-    $('#bourseOffers').innerHTML = bourse.offers.length ? bourse.offers.map(o => `<tr><td>${esc(t('bourse.perOgrine', {n: nf(o.price)}))}</td><td>${nf(o.quantity)} 💎</td></tr>`).join('') : `<tr><td class="empty">${esc(t('bourse.none'))}</td></tr>`;
-  }
-  if (!catalog) return;
+const TABS = ['shop', 'ogrines', 'kamas'];
+let tab = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'shop';
+let catalog = null, market = null, legacyBourse = null, mine = null, cat = '', account = null;
+const acc = () => mine?.accounts?.find(a => a.id === account) || mine?.accounts?.[0] || null;
+function say(text, ok = true) { const m = $('#msg'); m.className = 'alert ' + (ok ? 'ok' : 'error'); m.textContent = text; m.hidden = !text; }
+
+function renderWallet() {
+  const box = $('#wallet');
+  if (!getToken()) { box.innerHTML = `<div class="alert info row between"><span>${esc(t('shop.signHint'))}</span>${signInLink()}</div>`; return; }
+  if (!mine) { box.innerHTML = ''; return; }
+  if (!mine.accounts.length) { box.innerHTML = `<div class="alert info">${t('shop.noGameAccount')}</div>`; return; }
+  const a = acc();
+  box.innerHTML = `<div class="card row between" style="padding:14px 18px">
+    <label class="row muted"><span>${esc(t('shop.payWith'))}</span><select id="accPick">${mine.accounts.map(x => `<option value="${x.id}" ${x.id === a.id ? 'selected' : ''}>${esc(x.pseudo || x.name)} (${esc(x.name)})</option>`).join('')}</select></label>
+    <div class="row"><span class="pill">💎 ${fmt(a.ogrines)} ${esc(t('shop.ogrines'))}</span><span class="pill">🏦 ${fmt(a.bank)} ${esc(t('bak.bankKamas'))}</span></div></div>`;
+  $('#accPick').onchange = e => { account = Number(e.target.value); renderAll(); };
+}
+function renderShop() {
+  $('#howBuy').innerHTML = esc(getToken() ? t('shop.howBuyWeb') : t('shop.howBuy'));
+  if (!catalog) { $('#items').innerHTML = spinner(); return; }
   if (!catalog.length) { $('#items').innerHTML = `<p class="empty">${esc(t('shop.empty'))}</p>`; return; }
   const cats = [...new Set(catalog.map(i => i.categoryName))];
   $('#cats').innerHTML = [['', t('shop.all')], ...cats.map(c => [c, c])].map(([v, l]) => `<button class="chip ${v === cat ? 'on' : ''}" data-cat="${esc(v)}">${esc(l)}</button>`).join('');
-  $('#items').innerHTML = catalog.filter(i => !cat || i.categoryName === cat).map(i => `<div class="shop-item"><b>${esc(i.name)}</b><small>${esc(i.categoryName)}${i.level ? ' · ' + esc(t('shop.level', {n: i.level})) : ''}</small><span class="price">${nf(i.price)} 💎</span></div>`).join('');
+  const canBuy = !!acc();
+  $('#items').innerHTML = catalog.filter(i => !cat || i.categoryName === cat).map(i => `<div class="shop-item">
+    <a href="encyclopedie.html#item-${Number(i.template)}"><b>${esc(i.name)}</b></a><small>${esc(i.categoryName)}${i.level ? ' · ' + esc(t('shop.level', {n: i.level})) : ''}</small>
+    <div class="row between" style="margin-top:4px"><span class="price">${fmt(i.price)} 💎</span>${canBuy ? `<span class="row" style="gap:6px"><input type="number" min="1" max="100" value="1" data-qty="${Number(i.template)}" style="width:64px;padding:6px 8px"><button class="btn gold small" data-buy="${Number(i.template)}">${esc(t('shop.buy'))}</button></span>` : ''}</div></div>`).join('');
 }
-$('#cats').addEventListener('click', e => { const c = e.target.closest('[data-cat]'); if (c) { cat = c.dataset.cat; render(); } });
-api('/api/shop').then(r => { catalog = r; render(); }).catch(() => { catalog = []; render(); });
-api('/api/bourse').then(r => { bourse = r; render(); }).catch(() => {});
-document.addEventListener('langchange', render);
+function renderOgrines() {
+  const box = $('#tab-ogrines');
+  const offers = market ? market.ogrineOffers : legacyBourse?.offers || [];
+  const last = market ? market.lastOgrinePrice : legacyBourse?.last?.price;
+  const onSale = offers.reduce((s, o) => s + o.quantity, 0);
+  const a = acc(), myOffers = (mine?.ogrineOffers || []);
+  box.innerHTML = `<div class="stack">
+    <div class="kpis"><div class="kpi"><b>${last ? esc(t('bourse.perOgrine', {n: fmt(last)})) : '—'}</b><span>${esc(t('bourse.last'))}</span></div><div class="kpi"><b>${fmt(onSale)} 💎</b><span>${esc(t('bourse.onSale'))}</span></div></div>
+    <div class="grid2">
+      <div class="card"><h4>${esc(t('bourse.offers'))}</h4>
+        <table class="table"><tbody>${offers.length ? offers.map(o => `<tr><td>${esc(t('bourse.perOgrine', {n: fmt(o.price)}))}</td><td class="num">${fmt(o.quantity)} 💎</td></tr>`).join('') : `<tr><td class="empty">${esc(t('bourse.none'))}</td></tr>`}</tbody></table>
+      </div>
+      <div class="stack">
+        ${a ? `<form class="card stack" id="buyOgr"><h4 style="margin:0">${esc(t('bak.buyOgr'))}</h4><p class="muted small" style="margin:0">${esc(t('bak.buyOgrP'))}</p>
+            <div class="row"><input type="number" name="quantity" min="1" required data-i18n-ph="bak.qty" placeholder="${esc(t('bak.qty'))}" style="flex:1"><input type="number" name="max" min="1" placeholder="${esc(t('bak.maxPrice'))}" style="flex:1"></div><button class="btn gold">${esc(t('bak.buy'))}</button></form>
+          <form class="card stack" id="sellOgr"><h4 style="margin:0">${esc(t('bak.sellOgr'))}</h4>
+            <div class="row"><input type="number" name="ogrines" min="1" max="${a.ogrines}" required placeholder="${esc(t('bak.qty'))}" style="flex:1"><input type="number" name="price" min="1" required placeholder="${esc(t('bak.pricePer'))}" style="flex:1"></div><button class="btn">${esc(t('bak.sell'))}</button></form>
+          ${myOffers.length ? `<div class="card"><h4>${esc(t('bak.myOffers'))}</h4><table class="table"><tbody>${myOffers.map(o => `<tr><td>${fmt(o.ogrines)} 💎 · ${esc(t('bourse.perOgrine', {n: fmt(o.price)}))}</td><td class="muted small">${esc(o.account)}</td><td class="num"><button class="btn small" data-cancel="${o.id}" data-kind="ogrines">${esc(t('bak.cancel'))}</button></td></tr>`).join('')}</tbody></table></div>` : ''}`
+        : `<div class="card"><p class="muted" style="margin:0">${t('bourse.howTo')}</p></div>`}
+      </div>
+    </div></div>`;
+}
+function renderKamas() {
+  const box = $('#tab-kamas');
+  if (!market) { box.innerHTML = market === null && !legacyBourse ? spinner() : errorBox({status: 404}); return; }
+  const a = acc(), myOffers = mine?.kamasOffers || [], d = market.daily, last = d[d.length - 1];
+  box.innerHTML = `<div class="stack">
+    <p class="muted" style="margin:0">${t('bak.p')}</p>
+    <div class="kpis"><div class="kpi"><b>${last ? esc(t('bak.rate', {n: fmt(last.rate)})) : '—'}</b><span>${esc(t('bak.lastRate'))}</span></div><div class="kpi"><b>${fmt(d.reduce((s, x) => s + x.volume, 0))}</b><span>${esc(t('bak.volume'))}</span></div><div class="kpi"><b>${market.kamasOffers.length}</b><span>${esc(t('bak.nbOffers'))}</span></div></div>
+    <div class="grid2">
+      <div class="card"><h4>${esc(t('bak.offers'))}</h4>
+        <div class="table-wrap"><table class="table" style="min-width:0"><tbody>${market.kamasOffers.length ? market.kamasOffers.map(o => `<tr><td><b>${fmt(o.kamas)}</b> K<br><small class="muted">${esc(o.seller)} · ${esc(t('bak.rate', {n: fmt(o.rate)}))}</small></td><td class="num">${fmt(o.price)} 💎</td><td class="num">${a ? `<button class="btn gold small" data-take="${o.id}">${esc(t('bak.buy'))}</button>` : ''}</td></tr>`).join('') : `<tr><td class="empty">${esc(t('bak.none'))}</td></tr>`}</tbody></table></div>
+      </div>
+      <div class="stack">
+        ${a ? `<form class="card stack" id="sellKamas"><h4 style="margin:0">${esc(t('bak.sellKamas'))}</h4><p class="muted small" style="margin:0">${esc(t('bak.sellKamasP', {n: fmt(a.bank)}))}</p>
+            <div class="row"><input type="number" name="kamas" min="1000" max="${a.bank}" required placeholder="${esc(t('bak.kamas'))}" style="flex:1"><input type="number" name="price" min="1" required placeholder="${esc(t('bak.priceOgr'))}" style="flex:1"></div><button class="btn gold">${esc(t('bak.sell'))}</button></form>
+          ${myOffers.length ? `<div class="card"><h4>${esc(t('bak.myOffers'))}</h4><table class="table"><tbody>${myOffers.map(o => `<tr><td>${fmt(o.kamas)} K → ${fmt(o.price)} 💎</td><td class="muted small">${esc(o.account)}</td><td class="num"><button class="btn small" data-cancel="${o.id}" data-kind="kamas">${esc(t('bak.cancel'))}</button></td></tr>`).join('')}</tbody></table></div>` : ''}`
+        : `<div class="card"><p class="muted" style="margin:0 0 12px">${esc(t('bak.signHint'))}</p>${signInLink()}</div>`}
+        <div class="card"><h4>${esc(t('bak.howBank'))}</h4><p class="muted small" style="margin:0">${t('bak.howBankP')}</p></div>
+      </div>
+    </div></div>`;
+}
+function renderTabs() {
+  document.querySelectorAll('#tabs [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  TABS.forEach(k => $('#tab-' + k).hidden = k !== tab);
+}
+function renderAll() { renderWallet(); renderTabs(); renderShop(); renderOgrines(); renderKamas(); }
+async function loadMine() {
+  if (!getToken()) { mine = null; return; }
+  try { mine = await x('bakMine'); if (!mine.accounts.some(a => a.id === account)) account = mine.accounts[0]?.id ?? null; }
+  catch { mine = null; }
+}
+async function loadMarket() {
+  try { market = await x('bak'); } catch { market = false; try { legacyBourse = await api('/api/bourse'); } catch {} }
+}
+async function act(task, okText) {
+  say('');
+  try { const r = await task(); if (r?.accounts) mine = r; await loadMarket(); if (!r?.accounts) await loadMine(); say(typeof okText === 'function' ? okText(r) : okText); }
+  catch (error) { say(error.message, false); }
+  renderAll();
+}
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b) return; tab = b.dataset.tab; history.replaceState(null, '', '#' + tab); say(''); renderTabs(); });
+$('#cats').addEventListener('click', e => { const c = e.target.closest('[data-cat]'); if (c) { cat = c.dataset.cat; renderShop(); } });
+document.addEventListener('click', e => {
+  const buy = e.target.closest('[data-buy]');
+  if (buy) { const template = Number(buy.dataset.buy), quantity = Number($(`[data-qty="${template}"]`)?.value || 1); buy.disabled = true;
+    return act(() => post('/api/master/shop/buy', {token: getToken(), id: acc().id, template, quantity}), r => t('shop.bought', {n: r.quantity, item: r.item})); }
+  const take = e.target.closest('[data-take]');
+  if (take && confirm(t('bak.confirmBuy'))) return act(() => x('bakBuyKamas', {account: acc().id, offer: Number(take.dataset.take)}), r => t('bak.bought', {n: fmt(r.kamas), p: fmt(r.price)}));
+  const cancel = e.target.closest('[data-cancel]');
+  if (cancel) return act(() => x('bakCancel', {offer: Number(cancel.dataset.cancel), kind: cancel.dataset.kind}), t('bak.cancelled'));
+});
+document.addEventListener('submit', e => {
+  const f = e.target, d = Object.fromEntries(new FormData(f)); e.preventDefault();
+  if (f.id === 'sellKamas') act(() => x('bakSellKamas', {account: acc().id, kamas: Number(d.kamas), price: Number(d.price)}), t('bak.onSaleOk'));
+  if (f.id === 'sellOgr') act(() => x('bakSellOgrines', {account: acc().id, ogrines: Number(d.ogrines), price: Number(d.price)}), t('bak.onSaleOk'));
+  if (f.id === 'buyOgr') act(() => x('bakBuyOgrines', {account: acc().id, quantity: Number(d.quantity), max: d.max ? Number(d.max) : undefined}), r => t('bak.boughtOgr', {n: fmt(r.bought), k: fmt(r.spent)}));
+});
+document.addEventListener('langchange', renderAll);
+document.addEventListener('session', async () => { await loadMine(); renderAll(); });
+renderAll();
+api('/api/shop').then(r => { catalog = r; renderShop(); }).catch(() => { catalog = []; renderShop(); });
+Promise.all([loadMarket(), loadMine()]).then(renderAll);
 </script>
 </body>
 </html>

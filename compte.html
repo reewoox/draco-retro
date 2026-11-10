@@ -5,112 +5,294 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-i18n-title="acc.title">Mon compte Draco</title>
 <link rel="icon" href="assets/favicon.ico">
-<link rel="stylesheet" href="assets/site.css?v=ec87e2cae9">
+<link rel="stylesheet" href="assets/site.css?v=6a3b3e1ae6">
 <style>
-.acc-grid{display:grid;gap:14px}
 .gacc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:10px}
 .gacc-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .gacc-head b{color:var(--gold2);font-size:18px}
-.gacc-head small{color:var(--muted)}
 .chars{display:flex;flex-wrap:wrap;gap:8px}
 .chr{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;padding:4px 10px 4px 4px;font-size:14px}
 .chr img{width:28px;height:28px;object-fit:contain}
 .chr b{color:var(--gold2)}
-.btn.small{padding:6px 12px;font-size:13px;border-radius:9px}
-.two{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.inv-item{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.inv-item:last-child{border-bottom:0}
+.inv-item input{accent-color:var(--gold);width:18px;height:18px}
 </style>
 </head>
 <body>
 <main class="form-page">
-  <div class="wrap" style="max-width:920px;display:grid;gap:22px">
-    <div>
-      <div class="eyebrow">DRACO</div>
-      <h1 style="margin:8px 0" data-i18n="acc.h"></h1>
-      <p style="color:var(--muted);margin:0" data-i18n="acc.p"></p>
-    </div>
+  <div class="wrap" style="max-width:1060px">
+    <div class="page-head"><div><div class="eyebrow">DRACO</div><h1 data-i18n="acc.h"></h1><p data-i18n="acc.p"></p></div><div class="row" id="who" hidden><span class="muted" id="signed"></span><button class="btn small" id="logout" data-i18n="acc.logout"></button></div></div>
 
-    <form class="form" id="loginForm" novalidate hidden>
+    <form class="form" id="loginForm" novalidate hidden style="max-width:460px;margin:0 auto">
       <label><span data-i18n="acc.email"></span><input type="email" name="email" maxlength="190" autocomplete="email" required></label>
       <label><span data-i18n="acc.pw"></span><input type="password" name="password" maxlength="72" autocomplete="current-password" required></label>
-      <div class="alert error" id="loginError" hidden></div>
+      <div class="alert error" data-err hidden></div>
       <button class="btn fire big" data-i18n="acc.login"></button>
       <p style="margin:0;color:var(--muted);font-size:14px;text-align:center" data-i18n-html="acc.noAccount"></p>
     </form>
 
-    <section id="panel" hidden style="display:grid;gap:18px">
-      <div class="top"><span id="signed" style="color:var(--muted)"></span><button class="btn small" id="logout" data-i18n="acc.logout"></button></div>
-      <div class="top"><h2 style="margin:0" data-i18n="acc.games"></h2><small id="count" style="color:var(--muted)"></small></div>
-      <div class="acc-grid" id="games"></div>
-      <div class="two">
-        <form class="form" id="createForm" novalidate>
-          <h3 style="margin:0;color:var(--gold2)" data-i18n="acc.create"></h3>
-          <label><span data-i18n="f.login"></span><input name="login" maxlength="20" data-i18n-ph="f.loginPh" required></label>
-          <label><span data-i18n="f.nick"></span><input name="pseudo" maxlength="20" data-i18n-ph="f.nickPh" required></label>
-          <label><span data-i18n="acc.gamePw"></span><input type="password" name="password" maxlength="30" autocomplete="new-password" data-i18n-ph="f.pwPh" required></label>
-          <div class="alert error" data-err hidden></div>
-          <button class="btn gold" data-i18n="acc.create"></button>
-        </form>
-        <form class="form" id="linkForm" novalidate>
-          <h3 style="margin:0;color:var(--gold2)" data-i18n="acc.link"></h3>
-          <p style="margin:0;color:var(--muted);font-size:14px" data-i18n="acc.linkHint"></p>
-          <label><span data-i18n="acc.gameLogin"></span><input name="login" maxlength="20" autocomplete="username" required></label>
-          <label><span data-i18n="acc.gamePw"></span><input type="password" name="password" maxlength="30" autocomplete="current-password" required></label>
-          <div class="alert error" data-err hidden></div>
-          <button class="btn gold" data-i18n="acc.link"></button>
-        </form>
+    <div id="panel" hidden>
+      <div class="tabs-bar" id="tabs">
+        <button data-tab="apercu" data-i18n="acc.tab.overview"></button>
+        <button data-tab="comptes" data-i18n="acc.tab.accounts"></button>
+        <button data-tab="inventaire" data-i18n="acc.tab.inventory"></button>
+        <button data-tab="recompenses" data-i18n="acc.tab.rewards"></button>
+        <button data-tab="historique" data-i18n="acc.tab.history"></button>
+        <button data-tab="securite" data-i18n="acc.tab.security"></button>
       </div>
-      <div class="alert" id="notice" hidden></div>
-    </section>
+      <div class="alert" id="notice" hidden style="margin-bottom:16px"></div>
+      <div id="view"></div>
+    </div>
   </div>
 </main>
-<script src="assets/i18n.js?v=5252a209c4"></script>
-<script src="assets/site.js?v=7e13277a88"></script>
+<script src="assets/i18n.js?v=e85817fd89"></script>
+<script src="assets/i18n-x.js?v=9e3d325a49"></script>
+<script src="assets/site.js?v=4300f90196"></script>
 <script>
 header('compte');
-const KEY = 'draco.master';
-let session = null, data = null;
-const getToken = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
-const setToken = v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch {} };
-const post = (path, body) => api(path, {method: 'POST', body: JSON.stringify(body)});
-function notice(text) { const n = $('#notice'); n.textContent = text; n.hidden = !text; }
-function render() {
-  const signedIn = !!data;
-  $('#loginForm').hidden = signedIn; $('#panel').hidden = !signedIn;
-  if (!signedIn) return;
-  $('#signed').textContent = t('acc.signed', {email: data.master.email});
-  $('#count').textContent = t('acc.count', {n: data.accounts.length, max: data.max});
-  $('#games').innerHTML = data.accounts.length ? data.accounts.map(a => `<div class="gacc">
-      <div class="gacc-head"><div><b>${esc(a.pseudo)}</b> <small>· ${esc(a.name)}</small></div><button class="btn small" data-unlink="${a.id}" data-name="${esc(a.name)}">${esc(t('acc.unlink'))}</button></div>
-      ${a.players.length ? `<div class="chars">${a.players.map(p => `<span class="chr" title="${esc(className(p.class_id))}"><img src="${classImg(p.class_id, p.sex)}" alt=""><span>${esc(p.name)}</span><b>${Number(p.level)}</b></span>`).join('')}</div>` : `<small style="color:var(--muted)">${esc(t('acc.nochar'))}</small>`}
-    </div>`).join('') : `<p style="color:var(--muted);margin:0">${esc(t('acc.none'))}</p>`;
-}
-async function refresh() {
-  const token = getToken();
-  if (!token) { data = null; return render(); }
-  try { data = await post('/api/master/me', {token}); }
-  catch (e) { if (e.status === 401) setToken(null); data = null; }
+const TABS = ['apercu', 'comptes', 'inventaire', 'recompenses', 'historique', 'securite'];
+let tab = TABS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'apercu';
+const cache = {};   // per tab data: me, profile, inventory, vote, lottery, history, bank
+let histTab = 'shop', wheelTurn = 0, spinning = false;
+function notice(text, ok = true) { const n = $('#notice'); n.className = 'alert ' + (ok ? 'ok' : 'error'); n.textContent = text || ''; n.hidden = !text; }
+const accountOptions = (list, sel) => list.map(a => `<option value="${a.id}" ${a.id === sel ? 'selected' : ''}>${esc(a.pseudo || a.name)} (${esc(a.name)})${a.ogrines != null ? ' · ' + fmt(a.ogrines) + ' 💎' : ''}</option>`).join('');
+const charOptions = list => list.map(c => `<option value="${c.id}">${esc(c.name)} · ${esc(t('shop.level', {n: c.level}))}${c.account ? ' · ' + esc(c.account) : ''}${c.online ? ' · ' + esc(t('st.online')) : ''}</option>`).join('');
+const charOf = p => `<span class="who"><img src="${classImg(p.class_id, p.sex)}" alt="">${esc(p.name)}</span>`;
+const srcKind = s => !s || s === 'launcher' ? 'shop' : /^(vote|palier)/.test(s) ? 'vote' : s.startsWith('loterie') ? 'lottery' : s.startsWith('code') ? 'code' : 'other';
+const accountsList = () => cache.profile?.accounts || [];
+
+// ---------------------------------------------------------------- views
+const views = {
+  apercu() {
+    const p = cache.profile; if (!p) return spinner();
+    const tot = p.totals || {};
+    const all = p.accounts.flatMap(a => a.players.map(c => ({...c, account: a.name})));
+    return `<div class="stack" style="gap:20px">
+      <div class="kpis">
+        <div class="kpi"><b>${p.accounts.length}</b><span>${esc(t('acc.k.accounts'))}</span></div>
+        <div class="kpi"><b>${fmt(tot.characters)}</b><span>${esc(t('acc.k.chars'))}</span></div>
+        <div class="kpi"><b>${fmt(tot.maxLevel)}</b><span>${esc(t('acc.k.maxLevel'))}</span></div>
+        <div class="kpi"><b>${fmt(tot.ogrines)}</b><span>💎 ${esc(t('shop.ogrines'))}</span></div>
+        <div class="kpi"><b>${fmt(tot.kamas)}</b><span>${esc(t('acc.k.kamas'))}</span></div>
+        <div class="kpi"><b>${fmt(tot.bank)}</b><span>🏦 ${esc(t('bak.bankKamas'))}</span></div>
+        <div class="kpi"><b>${fmt(tot.successes)}</b><span>${esc(t('rk.successes'))}</span></div>
+        <div class="kpi"><b>${fmt(tot.votes)}</b><span>${esc(t('rk.votes'))}</span></div>
+      </div>
+      ${tot.pendingItems ? `<div class="alert info row between"><span>${esc(t('acc.pending', {n: tot.pendingItems}))}</span><button class="btn gold small" data-go="inventaire">${esc(t('acc.tab.inventory'))}</button></div>` : ''}
+      ${all.length ? `<div class="chars-grid">${all.map(c => `<div class="char-card">
+          <div class="row between">${charOf(c)}<span class="pill">${esc(t('shop.level', {n: c.level}))}</span></div>
+          <div class="muted small">${esc(className(c.class_id))} · ${esc(c.account)}${c.guild ? ' · ' + esc(c.guild) : ''}${c.online ? ' · <span class="dot on"></span>' + esc(t('st.online')) : ''}</div>
+          <dl><dt>${esc(t('acc.s.vit'))}</dt><dd>${fmt(c.stats.vitality)}</dd><dt>${esc(t('acc.s.wis'))}</dt><dd>${fmt(c.stats.wisdom)}</dd>
+            <dt>${esc(t('acc.s.str'))}</dt><dd>${fmt(c.stats.strength)}</dd><dt>${esc(t('acc.s.int'))}</dt><dd>${fmt(c.stats.intelligence)}</dd>
+            <dt>${esc(t('acc.s.cha'))}</dt><dd>${fmt(c.stats.chance)}</dd><dt>${esc(t('acc.s.agi'))}</dt><dd>${fmt(c.stats.agility)}</dd>
+            <dt>Kamas</dt><dd>${fmt(c.kamas)}</dd><dt>${esc(t('rk.successes'))}</dt><dd>${fmt(c.successes)}</dd>
+            <dt>${esc(t('acc.s.align'))}</dt><dd>${esc(c.align)}${c.alvl ? ' ' + c.alvl : ''}</dd><dt>${esc(t('rk.honor'))}</dt><dd>${fmt(c.honor)}</dd>
+            <dt>${esc(t('acc.s.kills'))}</dt><dd>${fmt(c.kills)}</dd><dt>${esc(t('acc.s.energy'))}</dt><dd>${fmt(c.energy)}</dd></dl>
+        </div>`).join('')}</div>` : `<div class="alert info">${esc(t('acc.noChars'))}</div>`}
+    </div>`;
+  },
+  comptes() {
+    const d = cache.me; if (!d) return spinner();
+    return `<div class="stack" style="gap:18px">
+      <div class="row between"><h2 style="margin:0;font-size:24px">${esc(t('acc.games'))}</h2><small class="muted">${esc(t('acc.count', {n: d.accounts.length, max: d.max}))}</small></div>
+      ${d.accounts.length ? d.accounts.map(a => `<div class="gacc">
+        <div class="gacc-head"><div><b>${esc(a.pseudo)}</b> <small class="muted">· ${esc(a.name)}</small>${a.banned ? ' <span class="pill bad">' + esc(t('acc.banned')) + '</span>' : ''}${a.logged ? ' <span class="pill ok">' + esc(t('st.online')) + '</span>' : ''}</div>
+          <div class="row"><button class="btn small" data-gpw="${a.id}" data-name="${esc(a.name)}">${esc(t('acc.gamePwChange'))}</button><button class="btn small" data-unlink="${a.id}" data-name="${esc(a.name)}">${esc(t('acc.unlink'))}</button></div></div>
+        ${a.players.length ? `<div class="chars">${a.players.map(p => `<span class="chr" title="${esc(className(p.class_id))}"><img src="${classImg(p.class_id, p.sex)}" alt=""><span>${esc(p.name)}</span><b>${Number(p.level)}</b></span>`).join('')}</div>` : `<small class="muted">${esc(t('acc.nochar'))}</small>`}
+      </div>`).join('') : `<p class="muted" style="margin:0">${esc(t('acc.none'))}</p>`}
+      <div class="alert info">${esc(t('acc.heroHint'))}</div>
+      <div class="grid2">
+        <form class="form" id="createForm" novalidate>
+          <h3 style="margin:0;color:var(--gold2)">${esc(t('acc.create'))}</h3>
+          <label><span>${esc(t('f.login'))}</span><input name="login" maxlength="20" placeholder="${esc(t('f.loginPh'))}" required></label>
+          <label><span>${esc(t('f.nick'))}</span><input name="pseudo" maxlength="20" placeholder="${esc(t('f.nickPh'))}" required></label>
+          <label><span>${esc(t('acc.gamePw'))}</span><input type="password" name="password" maxlength="30" autocomplete="new-password" placeholder="${esc(t('f.pwPh'))}" required></label>
+          <div class="alert error" data-err hidden></div>
+          <button class="btn gold">${esc(t('acc.create'))}</button>
+        </form>
+        <form class="form" id="linkForm" novalidate>
+          <h3 style="margin:0;color:var(--gold2)">${esc(t('acc.link'))}</h3>
+          <p style="margin:0;color:var(--muted);font-size:14px">${esc(t('acc.linkHint'))}</p>
+          <label><span>${esc(t('acc.gameLogin'))}</span><input name="login" maxlength="20" autocomplete="username" required></label>
+          <label><span>${esc(t('acc.gamePw'))}</span><input type="password" name="password" maxlength="30" autocomplete="current-password" required></label>
+          <div class="alert error" data-err hidden></div>
+          <button class="btn gold">${esc(t('acc.link'))}</button>
+        </form>
+      </div>
+    </div>`;
+  },
+  inventaire() {
+    const inv = cache.inventory, bank = cache.bank; if (!inv || !bank) return spinner();
+    const chars = inv.characters;
+    return `<div class="stack" style="gap:18px">
+      <div class="card"><div class="row between"><h3 style="margin:0">🎒 ${esc(t('inv.h'))}</h3><span class="muted small">${esc(t('inv.p'))}</span></div>
+        ${inv.items.length ? `<form id="claimForm"><div style="margin:10px 0">${inv.items.map(i => `<label class="inv-item" style="color:var(--text)">${i.held ? `<input type="checkbox" name="ids" value="${i.id}" checked>` : '<span style="width:18px">⏳</span>'}
+            <span style="flex:1"><a href="encyclopedie.html#item-${Number(i.template)}"><b>${i.quantity} × ${esc(i.name)}</b></a><br><small class="muted">${esc(i.typeName)}${i.level ? ' · ' + esc(t('shop.level', {n: i.level})) : ''} · ${esc(i.account)} · ${esc(t('inv.src.' + srcKind(i.source)))} · ${esc(dateFmt(i.at))}</small></span>
+            <span class="pill ${i.held ? '' : 'ok'}">${esc(i.held ? t('inv.held') : t('inv.sentTo', {name: i.target || '?'}))}</span></label>`).join('')}</div>
+          ${inv.items.some(i => i.held) ? (chars.length ? `<div class="row"><span class="muted">${esc(t('inv.sendTo'))}</span><select name="player">${charOptions(chars)}</select><button class="btn gold">${esc(t('inv.send'))}</button></div><p class="muted small" style="margin:8px 0 0">${esc(t('inv.delivery'))}</p>` : `<div class="alert info">${esc(t('acc.noChars'))}</div>`) : ''}
+        </form>` : `<p class="muted" style="margin:10px 0 0">${esc(t('inv.empty'))}</p>`}
+      </div>
+      <div class="grid2">
+        <form class="card stack" id="bankForm"><h3 style="margin:0">🏦 ${esc(t('bak.bank'))}</h3>
+          <div class="stack" style="gap:6px">${bank.accounts.map(a => `<div class="row between"><span>${esc(a.pseudo || a.name)} <small class="muted">${esc(a.name)}</small></span><b>${fmt(a.bank)} K</b></div>`).join('') || `<span class="muted">${esc(t('acc.none'))}</span>`}</div>
+          <p class="muted small" style="margin:0">${t('bak.howBankP')}</p>
+          ${chars.length && bank.accounts.some(a => a.bank > 0) ? `<div class="row"><select name="player">${charOptions(chars)}</select><input type="number" name="kamas" min="1" required placeholder="${esc(t('bak.kamas'))}" style="width:150px"><button class="btn gold">${esc(t('bak.send'))}</button></div><p class="muted small" style="margin:0">${esc(t('bak.sendP'))}</p>` : ''}
+          ${inv.transfers.length ? `<div><h4>${esc(t('bak.pending'))}</h4>${inv.transfers.map(x => `<div class="small">⏳ ${fmt(x.kamas)} K → ${esc(x.player)} <span class="muted">· ${esc(dateFmt(x.at, true))}</span></div>`).join('')}</div>` : ''}
+          <a class="btn small" href="boutique.html#kamas" style="justify-self:start">${esc(t('bak.h3'))} →</a>
+        </form>
+        <form class="card stack" id="codeForm"><h3 style="margin:0">🎁 ${esc(t('code.h'))}</h3><p class="muted small" style="margin:0">${esc(t('code.p'))}</p>
+          <input type="text" name="code" maxlength="32" required placeholder="DRACO-2026" style="text-transform:uppercase">
+          <select name="account">${accountOptions(accountsList())}</select>
+          <button class="btn gold">${esc(t('code.redeem'))}</button></form>
+      </div>
+    </div>`;
+  },
+  recompenses() {
+    const v = cache.vote, l = cache.lottery; if (!v || !l) return spinner();
+    const accs = accountsList(), next = v.tiers.find(x => !x.reachable);
+    const colors = ['#8c2f17', '#b8641e', '#5a3a1c', '#c98a2a', '#6b2410', '#9a4a18'];
+    const n = l.prizes.length, slice = 360 / n;
+    return `<div class="stack" style="gap:18px">
+      ${accs.length ? `<label class="row muted"><span>${esc(t('rew.account'))}</span><select id="rewAccount">${accountOptions(accs, cache.rewAccount)}</select></label>` : `<div class="alert info">${esc(t('acc.none'))}</div>`}
+      <div class="grid2">
+        <div class="card stack"><h3 style="margin:0">🗳️ ${esc(t('vote.h'))}</h3>
+          <p class="muted small" style="margin:0">${esc(t('vote.p', {reward: v.reward, h: v.cooldownHours}))}</p>
+          ${v.sites.length ? v.sites.map(s => { const wait = s.nextAt - Date.now(); return `<div class="vote-site"><b>${esc(s.name)}</b>${wait > 0 ? `<span class="pill">${esc(t('vote.wait', {n: Math.ceil(wait / 60000)}))}</span>` : `<button class="btn fire small" data-vote="${esc(s.id)}" data-url="${esc(s.url)}" ${accs.length ? '' : 'disabled'}>${esc(t('vote.go'))}</button>`}</div>`; }).join('') : `<p class="muted" style="margin:0">${esc(t('vote.noSites'))}</p>`}
+          <div><div class="row between"><h4 style="margin:0">${esc(t('vote.tiers'))}</h4><span class="pill">${esc(t('vote.count', {n: v.votes}))}</span></div>
+            ${next ? `<div class="bar" style="margin:10px 0"><i style="width:${Math.min(100, v.votes * 100 / next.votes)}%"></i></div>` : ''}
+            ${v.tiers.map(tr => `<div class="tier"><span><b>${esc(t('vote.tierN', {n: tr.votes}))}</b> · ${esc(tr.reward)}</span>${tr.claimed ? `<span class="pill ok">✓ ${esc(t('vote.claimed'))}</span>` : tr.reachable ? `<button class="btn gold small" data-tier="${tr.index}">${esc(t('vote.claim'))}</button>` : `<span class="muted small">${v.votes} / ${tr.votes}</span>`}</div>`).join('')}</div>
+        </div>
+        <div class="card"><h3 style="margin:0 0 6px">🎡 ${esc(t('lot.h'))}</h3>
+          <p class="muted small" style="margin:0 0 14px">${esc(t('lot.p', {free: l.freeLeft, cost: fmt(l.cost)}))}</p>
+          <div class="wheel-box">
+            <div class="wheel-wrap"><div class="wheel" id="wheel" style="transform:rotate(${wheelTurn}deg);background:conic-gradient(${l.prizes.map((p, i) => `${colors[i % colors.length]} ${i * slice}deg ${(i + 1) * slice}deg`).join(',')})">
+              ${l.prizes.map((p, i) => `<span style="transform:rotate(${i * slice + slice / 2 - 90}deg)">${esc(p.label)}</span>`).join('')}</div></div>
+            <button class="btn fire big" id="spin" ${accs.length && !spinning ? '' : 'disabled'}>${esc(l.freeLeft ? t('lot.spinFree') : t('lot.spinPaid', {cost: fmt(l.cost)}))}</button>
+          </div>
+          ${l.last.length ? `<h4 style="margin-top:16px">${esc(t('lot.last'))}</h4><div class="small stack" style="gap:4px">${l.last.map(r => `<div class="row between"><span>🎁 ${esc(r.label)}</span><span class="muted">${esc(r.paid ? fmt(r.paid) + ' 💎' : t('lot.free'))} · ${esc(dateFmt(r.at, true))}</span></div>`).join('')}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  },
+  historique() {
+    const h = cache.history; if (!h) return spinner();
+    const tabs = ['shop', 'game', 'ogrines', 'kamas'];
+    const rows = h[histTab] || [];
+    const table = histTab === 'shop' || histTab === 'game'
+      ? `<thead><tr><th>${esc(t('hist.date'))}</th><th>${esc(t('wiki.item'))}</th><th>${esc(t('hist.account'))}</th><th class="num">${esc(t('hist.price'))}</th><th>${esc(t('hist.state'))}</th></tr></thead><tbody>${rows.map(o => `<tr><td class="small">${esc(dateFmt(o.at, true))}</td><td>${o.quantity} × ${esc(o.item)}</td><td class="small">${esc(o.account)}</td><td class="num">${fmt(o.price)} 💎</td><td class="small">${esc(o.delivered ? t('hist.delivered', {name: o.player || ''}) : o.held ? t('inv.held') : t('hist.waiting'))}</td></tr>`).join('')}</tbody>`
+      : `<thead><tr><th>${esc(t('hist.date'))}</th><th>${esc(t('hist.reason'))}</th><th>${esc(t('hist.account'))}</th><th class="num">${esc(histTab === 'ogrines' ? t('shop.ogrines') : 'Kamas')}</th></tr></thead><tbody>${rows.map(r => `<tr><td class="small">${esc(dateFmt(r.at, true))}</td><td>${esc(r.reason)}</td><td class="small">${esc(r.account)}</td><td class="num" style="color:${r.delta < 0 ? '#f19b98' : '#9be0a6'}">${r.delta > 0 ? '+' : ''}${fmt(r.delta)}</td></tr>`).join('')}</tbody>`;
+    return `<div class="chips" id="histTabs">${tabs.map(k => `<button class="chip ${k === histTab ? 'on' : ''}" data-hist="${k}">${esc(t('hist.' + k))}</button>`).join('')}</div>
+      ${rows.length ? `<div class="table-wrap"><table class="table">${table}</table></div>` : `<p class="empty">${esc(t('hist.empty'))}</p>`}`;
+  },
+  securite() {
+    return `<div class="grid2">
+      <form class="form" id="pwForm" novalidate><h3 style="margin:0;color:var(--gold2)">${esc(t('sec.h'))}</h3>
+        <label><span>${esc(t('sec.current'))}</span><input type="password" name="current" autocomplete="current-password" required></label>
+        <label><span>${esc(t('sec.new'))}</span><input type="password" name="password" autocomplete="new-password" minlength="8" required></label>
+        <label><span>${esc(t('f.confirm'))}</span><input type="password" name="confirm" autocomplete="new-password" required></label>
+        <div class="alert error" data-err hidden></div><button class="btn gold">${esc(t('sec.save'))}</button></form>
+      <div class="card stack"><h3 style="margin:0">${esc(t('sec.tipsH'))}</h3><p class="muted" style="margin:0">${esc(t('sec.tips'))}</p><button class="btn" id="logoutAll">${esc(t('acc.logout'))}</button></div>
+    </div>`;
+  },
+};
+
+// ---------------------------------------------------------------- loading
+const loaders = {
+  apercu: async () => { cache.profile = await x('profile'); },
+  comptes: async () => { cache.me = await post('/api/master/me', {token: getToken()}); },
+  inventaire: async () => { [cache.inventory, cache.bank] = await Promise.all([x('inventory'), x('bakMine')]); if (!cache.profile) cache.profile = await x('profile'); },
+  recompenses: async () => { [cache.vote, cache.lottery] = await Promise.all([x('voteInfo'), x('lotteryInfo')]); if (!cache.profile) cache.profile = await x('profile'); },
+  historique: async () => { cache.history = await x('history'); },
+  securite: async () => {},
+};
+const errors = {};
+async function load(name = tab, force = false) {
+  delete errors[name];
+  try { if (force || !loaded.has(name)) { await loaders[name](); loaded.add(name); } }
+  catch (e) {
+    if (e.status === 401) { setToken(null); return render(); }
+    errors[name] = e;
+  }
   render();
 }
-document.addEventListener('langchange', render);
-function formError(form, error) { const box = form.querySelector('[data-err]') || $('#loginError'); box.textContent = error.errors ? [...new Set(Object.values(error.errors).flat().map(trServer))].join(' · ') : error.message; box.hidden = false; }
-function onSubmit(form, task) {
-  form.addEventListener('submit', async e => {
-    e.preventDefault(); const box = form.querySelector('[data-err]') || $('#loginError'); box.hidden = true; notice('');
-    const button = form.querySelector('button'); button.disabled = true;
-    try { await task(Object.fromEntries(new FormData(form))); form.reset(); } catch (error) { formError(form, error); } finally { button.disabled = false; }
-  });
+const loaded = new Set();
+function render() {
+  const signedIn = !!getToken();
+  $('#loginForm').hidden = signedIn; $('#panel').hidden = !signedIn; $('#who').hidden = !signedIn;
+  if (!signedIn) return;
+  const email = cache.profile?.email || cache.me?.master?.email;
+  $('#signed').textContent = email ? t('acc.signed', {email}) : '';
+  document.querySelectorAll('#tabs [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  $('#view').innerHTML = errors[tab] ? errorBox(errors[tab]) : views[tab]();
+  if (!cache.rewAccount) cache.rewAccount = accountsList()[0]?.id;
 }
-onSubmit($('#loginForm'), async d => { const r = await post('/api/master/login', {email: d.email, password: d.password}); setToken(r.token); await refresh(); });
-onSubmit($('#createForm'), async d => { const r = await post('/api/master/accounts/create', {token: getToken(), ...d}); notice(t('acc.created', {name: r.name})); await refresh(); });
-onSubmit($('#linkForm'), async d => { const r = await post('/api/master/accounts/link', {token: getToken(), ...d}); notice(t('acc.linked', {name: r.name})); await refresh(); });
-$('#games').addEventListener('click', async e => {
-  const b = e.target.closest('[data-unlink]'); if (!b) return;
-  if (!confirm(t('acc.unlinkConfirm', {name: b.dataset.name}))) return;
-  try { await post('/api/master/accounts/unlink', {token: getToken(), id: Number(b.dataset.unlink)}); await refresh(); } catch (error) { notice(error.message); }
+function go(name) { tab = name; history.replaceState(null, '', '#' + name); notice(''); render(); load(name); }
+async function refreshAll() { loaded.clear(); await load(tab, true); }
+
+// ---------------------------------------------------------------- actions
+function formError(form, error) { const box = form.querySelector('[data-err]'); const text = error.errors ? [...new Set(Object.values(error.errors).flat().map(trServer))].join(' · ') : error.message; if (box) { box.textContent = text; box.hidden = false; } else notice(text, false); }
+async function run(form, task) {
+  const box = form?.querySelector('[data-err]'); if (box) box.hidden = true; notice('');
+  const button = form?.querySelector('button:not([type=button])'); if (button) button.disabled = true;
+  try { await task(); } catch (error) { if (error.status === 401) { setToken(null); render(); } else form ? formError(form, error) : notice(error.message, false); }
+  finally { if (button) button.disabled = false; }
+}
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) go(b.dataset.tab); });
+$('#loginForm').addEventListener('submit', e => { e.preventDefault(); const f = e.target, d = Object.fromEntries(new FormData(f));
+  run(f, async () => {
+    const r = await post('/api/master/login', {email: d.email, password: d.password}); setToken(r.token); f.reset();
+    const next = new URLSearchParams(location.search).get('next');
+    if (next && /^[\w-]+\.html(#[\w-]*)?$/.test(next) && !next.startsWith('compte.html')) { location.href = next; return; }
+    render(); load(tab, true);
+  }); });
+document.addEventListener('submit', e => {
+  const f = e.target; if (f.id === 'loginForm' || !f.closest('#view')) return; e.preventDefault();
+  const d = Object.fromEntries(new FormData(f));
+  if (f.id === 'createForm') run(f, async () => { const r = await post('/api/master/accounts/create', {token: getToken(), ...d}); notice(t('acc.created', {name: r.name})); await refreshAll(); });
+  if (f.id === 'linkForm') run(f, async () => { const r = await post('/api/master/accounts/link', {token: getToken(), ...d}); notice(t('acc.linked', {name: r.name})); await refreshAll(); });
+  if (f.id === 'claimForm') run(f, async () => { const ids = [...f.querySelectorAll('[name=ids]:checked')].map(i => Number(i.value)); const r = await x('inventoryClaim', {ids, player: Number(d.player)}); notice(t('inv.sent', {n: r.sent, name: r.player})); await load('inventaire', true); });
+  if (f.id === 'bankForm') run(f, async () => { const r = await x('bakSendKamas', {player: Number(d.player), kamas: Number(d.kamas)}); notice(t('bak.sent', {n: fmt(r.kamas), name: r.player})); await load('inventaire', true); loaded.delete('apercu'); });
+  if (f.id === 'codeForm') run(f, async () => { const r = await x('redeemCode', {code: d.code, account: Number(d.account)}); notice(t('code.ok', {reward: r.reward})); loaded.clear(); await load('inventaire', true); });
+  if (f.id === 'pwForm') run(f, async () => { if (d.password !== d.confirm) throw new Error(t('err.pwMatch')); await post('/api/master/password', {token: getToken(), current: d.current, password: d.password}); f.reset(); notice(t('sec.ok')); });
 });
-$('#logout').onclick = async () => { const token = getToken(); setToken(null); try { await post('/api/master/logout', {token}); } catch {} data = null; render(); };
-refresh();
+document.addEventListener('change', e => { if (e.target.id === 'rewAccount') cache.rewAccount = Number(e.target.value); });
+document.addEventListener('click', e => {
+  const goBtn = e.target.closest('[data-go]'); if (goBtn) return go(goBtn.dataset.go);
+  const h = e.target.closest('[data-hist]'); if (h) { histTab = h.dataset.hist; return render(); }
+  const unlink = e.target.closest('[data-unlink]');
+  if (unlink) { if (!confirm(t('acc.unlinkConfirm', {name: unlink.dataset.name}))) return; return run(null, async () => { await post('/api/master/accounts/unlink', {token: getToken(), id: Number(unlink.dataset.unlink)}); await refreshAll(); }); }
+  const gpw = e.target.closest('[data-gpw]');
+  if (gpw) { const password = prompt(t('acc.gamePwPrompt', {name: gpw.dataset.name})); if (!password) return; return run(null, async () => { await post('/api/master/accounts/password', {token: getToken(), id: Number(gpw.dataset.gpw), password}); notice(t('acc.gamePwOk', {name: gpw.dataset.name})); }); }
+  const vote = e.target.closest('[data-vote]');
+  if (vote) {
+    // Open the voting site at once (popup blockers), then record the vote.
+    window.open(vote.dataset.url, '_blank', 'noopener');
+    return run(null, async () => { const r = await x('vote', {site: vote.dataset.vote, account: cache.rewAccount}); cache.vote = r; notice(t('vote.ok', {reward: r.reward})); render(); });
+  }
+  const tier = e.target.closest('[data-tier]');
+  if (tier) return run(null, async () => { const r = await x('voteClaim', {tier: Number(tier.dataset.tier), account: cache.rewAccount}); cache.vote = r; notice(t('vote.claimOk', {reward: r.reward})); loaded.delete('inventaire'); render(); });
+  if (e.target.id === 'spin' && !spinning) {
+    spinning = true; e.target.disabled = true;
+    return run(null, async () => {
+      try {
+        const r = await x('lotterySpin', {account: cache.rewAccount});
+        const n = cache.lottery.prizes.length, slice = 360 / n;
+        // The pointer is at the top: bring the middle of the won slice under it, after 5 full turns.
+        const target = 360 - (r.index * slice + slice / 2);
+        wheelTurn += 1800 + ((target - wheelTurn % 360) + 360) % 360;
+        $('#wheel').style.transform = `rotate(${wheelTurn}deg)`;
+        await new Promise(res => setTimeout(res, 4700));
+        cache.lottery = r; notice(t('lot.won', {prize: r.prize})); loaded.delete('apercu'); loaded.delete('inventaire');
+      } finally { spinning = false; render(); }
+    });
+  }
+  if (e.target.id === 'logoutAll') $('#logout').click();
+});
+$('#logout').onclick = async () => { const token = getToken(); setToken(null); try { await post('/api/master/logout', {token}); } catch {} Object.keys(cache).forEach(k => delete cache[k]); loaded.clear(); render(); };
+document.addEventListener('langchange', render);
+render();
+if (getToken()) { load(tab); if (tab !== 'apercu') load('apercu'); }
 </script>
 </body>
 </html>
