@@ -25,13 +25,16 @@
       <div id="formBody">
         <h1 data-i18n="nav.register"></h1>
         <div style="display:grid;gap:16px;margin-top:16px">
-          <label><span data-i18n="f.login"></span><input type="text" name="login" maxlength="20" autocomplete="username" data-i18n-ph="f.loginPh" required><span class="field-err" data-for="login"></span></label>
-          <label><span data-i18n="f.nick"></span><input type="text" name="pseudo" maxlength="20" data-i18n-ph="f.nickPh" required><span class="field-err" data-for="pseudo"></span></label>
-          <label><span data-i18n="f.email"></span><input type="email" name="email" maxlength="100" autocomplete="email" data-i18n-ph="f.emailPh" required><span class="field-err" data-for="email"></span></label>
+          <h3 style="margin:0;color:var(--gold2)" data-i18n="reg.master"></h3>
+          <label><span data-i18n="f.email"></span><input type="email" name="email" maxlength="190" autocomplete="email" data-i18n-ph="f.emailPh" required><span class="field-err" data-for="email"></span></label>
           <div class="row2">
             <label><span data-i18n="f.pw"></span><input type="password" name="password" maxlength="30" autocomplete="new-password" data-i18n-ph="f.pwPh" required><span class="field-err" data-for="password"></span></label>
             <label><span data-i18n="f.confirm"></span><input type="password" name="password_confirmation" maxlength="30" autocomplete="new-password" required><span class="field-err" data-for="password_confirmation"></span></label>
           </div>
+          <p style="margin:0;color:var(--muted);font-size:13px" data-i18n="reg.pwBoth"></p>
+          <h3 style="margin:8px 0 0;color:var(--gold2)" data-i18n="reg.game"></h3>
+          <label><span data-i18n="f.login"></span><input type="text" name="login" maxlength="20" autocomplete="username" data-i18n-ph="f.loginPh" required><span class="field-err" data-for="login"></span></label>
+          <label><span data-i18n="f.nick"></span><input type="text" name="pseudo" maxlength="20" data-i18n-ph="f.nickPh" required><span class="field-err" data-for="pseudo"></span></label>
           <div class="hp" aria-hidden="true"><label>Site web<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
           <label class="check"><input type="checkbox" name="accept"> <span data-i18n-html="reg.accept"></span></label>
           <span class="field-err" data-for="accept"></span>
@@ -49,8 +52,8 @@
     </form>
   </div>
 </main>
-<script src="assets/i18n.js?v=e5c9693fda"></script>
-<script src="assets/site.js?v=b6826f6277"></script>
+<script src="assets/i18n.js?v=5252a209c4"></script>
+<script src="assets/site.js?v=7e13277a88"></script>
 <script>
 header('inscription');
 const form = $('#form');
@@ -58,7 +61,7 @@ let created = null;
 function renderSuccess() {
   if (!created) return;
   $('#okTitle').textContent = t('reg.welcome', {name: created.pseudo});
-  $('#okText').innerHTML = t('reg.ok', {login: esc(created.login)});
+  $('#okText').innerHTML = t('reg.okMaster', {login: esc(created.login), email: esc(created.email)});
 }
 document.addEventListener('langchange', renderSuccess);
 form.addEventListener('submit', async e => {
@@ -68,10 +71,15 @@ form.addEventListener('submit', async e => {
   const local = {};
   if (data.password !== data.password_confirmation) local.password_confirmation = t('err.pwMatch');
   if (!data.accept) local.accept = t('reg.acceptErr');
+  if (String(data.password || '').length < 8) local.password = t('reg.pwBoth');
   if (Object.keys(local).length) return show(local);
   $('#submit').disabled = true;
   try {
-    created = await api('/api/register', {method: 'POST', body: JSON.stringify(data)});
+    // Draco account (e-mail), then its first game account with the same password.
+    const master = await api('/api/master/register', {method: 'POST', body: JSON.stringify({email: data.email, password: data.password})});
+    try { localStorage.setItem('draco.master', master.token); } catch {}
+    const game = await api('/api/master/accounts/create', {method: 'POST', body: JSON.stringify({token: master.token, login: data.login, pseudo: data.pseudo, password: data.password})});
+    created = {login: game.name, pseudo: game.pseudo, email: master.master.email};
     renderSuccess();
     $('#formBody').hidden = true; $('#success').hidden = false; scrollTo({top: 0});
   } catch (error) { show(error.errors || {}, error.message); }

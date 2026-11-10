@@ -5,7 +5,7 @@ const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '
 const fmt = n => Number(n || 0).toLocaleString(locale());
 
 function header(active) {
-  const links = [['index', './', 'nav.home'], ['telechargement', 'telechargement.html', 'nav.download'], ['classement', 'classement.html', 'nav.ladder'], ['boutique', 'boutique.html', 'nav.shop'], ['actualites', 'actualites.html', 'nav.news'], ['aide', 'aide.html', 'nav.faq'], ['reglement', 'reglement.html', 'nav.rules']];
+  const links = [['index', './', 'nav.home'], ['telechargement', 'telechargement.html', 'nav.download'], ['classement', 'classement.html', 'nav.ladder'], ['boutique', 'boutique.html', 'nav.shop'], ['actualites', 'actualites.html', 'nav.news'], ['aide', 'aide.html', 'nav.faq'], ['reglement', 'reglement.html', 'nav.rules'], ['compte', 'compte.html', 'nav.account']];
   document.body.insertAdjacentHTML('afterbegin', `<div class="bg"></div><canvas class="embers"></canvas>
   <header class="top"><div class="wrap">
     <a class="brand" href="./"><img src="assets/logo-icon.png" alt="">DRACO</a>

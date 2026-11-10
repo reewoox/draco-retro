@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n-title="acc.title">Mon compte Draco</title>
+<link rel="icon" href="assets/favicon.ico">
+<link rel="stylesheet" href="assets/site.css?v=ec87e2cae9">
+<style>
+.acc-grid{display:grid;gap:14px}
+.gacc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:10px}
+.gacc-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.gacc-head b{color:var(--gold2);font-size:18px}
+.gacc-head small{color:var(--muted)}
+.chars{display:flex;flex-wrap:wrap;gap:8px}
+.chr{display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;padding:4px 10px 4px 4px;font-size:14px}
+.chr img{width:28px;height:28px;object-fit:contain}
+.chr b{color:var(--gold2)}
+.btn.small{padding:6px 12px;font-size:13px;border-radius:9px}
+.two{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<main class="form-page">
+  <div class="wrap" style="max-width:920px;display:grid;gap:22px">
+    <div>
+      <div class="eyebrow">DRACO</div>
+      <h1 style="margin:8px 0" data-i18n="acc.h"></h1>
+      <p style="color:var(--muted);margin:0" data-i18n="acc.p"></p>
+    </div>
+
+    <form class="form" id="loginForm" novalidate hidden>
+      <label><span data-i18n="acc.email"></span><input type="email" name="email" maxlength="190" autocomplete="email" required></label>
+      <label><span data-i18n="acc.pw"></span><input type="password" name="password" maxlength="72" autocomplete="current-password" required></label>
+      <div class="alert error" id="loginError" hidden></div>
+      <button class="btn fire big" data-i18n="acc.login"></button>
+      <p style="margin:0;color:var(--muted);font-size:14px;text-align:center" data-i18n-html="acc.noAccount"></p>
+    </form>
+
+    <section id="panel" hidden style="display:grid;gap:18px">
+      <div class="top"><span id="signed" style="color:var(--muted)"></span><button class="btn small" id="logout" data-i18n="acc.logout"></button></div>
+      <div class="top"><h2 style="margin:0" data-i18n="acc.games"></h2><small id="count" style="color:var(--muted)"></small></div>
+      <div class="acc-grid" id="games"></div>
+      <div class="two">
+        <form class="form" id="createForm" novalidate>
+          <h3 style="margin:0;color:var(--gold2)" data-i18n="acc.create"></h3>
+          <label><span data-i18n="f.login"></span><input name="login" maxlength="20" data-i18n-ph="f.loginPh" required></label>
+          <label><span data-i18n="f.nick"></span><input name="pseudo" maxlength="20" data-i18n-ph="f.nickPh" required></label>
+          <label><span data-i18n="acc.gamePw"></span><input type="password" name="password" maxlength="30" autocomplete="new-password" data-i18n-ph="f.pwPh" required></label>
+          <div class="alert error" data-err hidden></div>
+          <button class="btn gold" data-i18n="acc.create"></button>
+        </form>
+        <form class="form" id="linkForm" novalidate>
+          <h3 style="margin:0;color:var(--gold2)" data-i18n="acc.link"></h3>
+          <p style="margin:0;color:var(--muted);font-size:14px" data-i18n="acc.linkHint"></p>
+          <label><span data-i18n="acc.gameLogin"></span><input name="login" maxlength="20" autocomplete="username" required></label>
+          <label><span data-i18n="acc.gamePw"></span><input type="password" name="password" maxlength="30" autocomplete="current-password" required></label>
+          <div class="alert error" data-err hidden></div>
+          <button class="btn gold" data-i18n="acc.link"></button>
+        </form>
+      </div>
+      <div class="alert" id="notice" hidden></div>
+    </section>
+  </div>
+</main>
+<script src="assets/i18n.js?v=5252a209c4"></script>
+<script src="assets/site.js?v=7e13277a88"></script>
+<script>
+header('compte');
+const KEY = 'draco.master';
+let session = null, data = null;
+const getToken = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
+const setToken = v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch {} };
+const post = (path, body) => api(path, {method: 'POST', body: JSON.stringify(body)});
+function notice(text) { const n = $('#notice'); n.textContent = text; n.hidden = !text; }
+function render() {
+  const signedIn = !!data;
+  $('#loginForm').hidden = signedIn; $('#panel').hidden = !signedIn;
+  if (!signedIn) return;
+  $('#signed').textContent = t('acc.signed', {email: data.master.email});
+  $('#count').textContent = t('acc.count', {n: data.accounts.length, max: data.max});
+  $('#games').innerHTML = data.accounts.length ? data.accounts.map(a => `<div class="gacc">
+      <div class="gacc-head"><div><b>${esc(a.pseudo)}</b> <small>· ${esc(a.name)}</small></div><button class="btn small" data-unlink="${a.id}" data-name="${esc(a.name)}">${esc(t('acc.unlink'))}</button></div>
+      ${a.players.length ? `<div class="chars">${a.players.map(p => `<span class="chr" title="${esc(className(p.class_id))}"><img src="${classImg(p.class_id, p.sex)}" alt=""><span>${esc(p.name)}</span><b>${Number(p.level)}</b></span>`).join('')}</div>` : `<small style="color:var(--muted)">${esc(t('acc.nochar'))}</small>`}
+    </div>`).join('') : `<p style="color:var(--muted);margin:0">${esc(t('acc.none'))}</p>`;
+}
+async function refresh() {
+  const token = getToken();
+  if (!token) { data = null; return render(); }
+  try { data = await post('/api/master/me', {token}); }
+  catch (e) { if (e.status === 401) setToken(null); data = null; }
+  render();
+}
+document.addEventListener('langchange', render);
+function formError(form, error) { const box = form.querySelector('[data-err]') || $('#loginError'); box.textContent = error.errors ? [...new Set(Object.values(error.errors).flat().map(trServer))].join(' · ') : error.message; box.hidden = false; }
+function onSubmit(form, task) {
+  form.addEventListener('submit', async e => {
+    e.preventDefault(); const box = form.querySelector('[data-err]') || $('#loginError'); box.hidden = true; notice('');
+    const button = form.querySelector('button'); button.disabled = true;
+    try { await task(Object.fromEntries(new FormData(form))); form.reset(); } catch (error) { formError(form, error); } finally { button.disabled = false; }
+  });
+}
+onSubmit($('#loginForm'), async d => { const r = await post('/api/master/login', {email: d.email, password: d.password}); setToken(r.token); await refresh(); });
+onSubmit($('#createForm'), async d => { const r = await post('/api/master/accounts/create', {token: getToken(), ...d}); notice(t('acc.created', {name: r.name})); await refresh(); });
+onSubmit($('#linkForm'), async d => { const r = await post('/api/master/accounts/link', {token: getToken(), ...d}); notice(t('acc.linked', {name: r.name})); await refresh(); });
+$('#games').addEventListener('click', async e => {
+  const b = e.target.closest('[data-unlink]'); if (!b) return;
+  if (!confirm(t('acc.unlinkConfirm', {name: b.dataset.name}))) return;
+  try { await post('/api/master/accounts/unlink', {token: getToken(), id: Number(b.dataset.unlink)}); await refresh(); } catch (error) { notice(error.message); }
+});
+$('#logout').onclick = async () => { const token = getToken(); setToken(null); try { await post('/api/master/logout', {token}); } catch {} data = null; render(); };
+refresh();
+</script>
+</body>
+</html>
