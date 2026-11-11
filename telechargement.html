@@ -44,15 +44,32 @@
     <div class="card"><h3 data-i18n="dl.c2.h"></h3><p data-i18n="dl.c2.p"></p></div>
     <div class="card"><h3 data-i18n="dl.c3.h"></h3><p data-i18n="dl.c3.p"></p></div>
   </div>
+  <div class="wrap" style="margin-top:40px">
+    <div class="dl-box">
+      <div class="eyebrow" data-i18n="dl.bot.eyebrow"></div>
+      <h2 style="margin:0" data-i18n="dl.bot.h2"></h2>
+      <p style="color:#d9c8b3;margin:0" data-i18n="dl.bot.p"></p>
+      <div id="dlBot" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <a class="btn gold" href="bot/" data-i18n="dl.bot.phone"></a>
+      </div>
+      <div class="meta" id="botMeta"></div>
+      <ol class="steps">
+        <li data-i18n-html="dl.bot.s1"></li>
+        <li data-i18n-html="dl.bot.s2"></li>
+        <li data-i18n-html="dl.bot.s3"></li>
+      </ol>
+      <p style="margin:0;color:var(--muted);font-size:14px" data-i18n="dl.bot.note"></p>
+    </div>
+  </div>
 </main>
-<script src="assets/i18n.js?v=5d2a72fe2c"></script>
+<script src="assets/i18n.js?v=d90f11ecab"></script>
 <script src="assets/i18n-x.js?v=fb3c393f10"></script>
 <script src="assets/i18n-x2.js?v=fe413aaf1e"></script>
 <script src="assets/site.js?v=43d1dcde55"></script>
 <script>
 header('telechargement');
 const size = b => b > 1e9 ? (b / 1e9).toLocaleString(locale(), {maximumFractionDigits: 1}) + ' ' + t('unit.gb') : Math.round(b / 1e6) + ' ' + t('unit.mb');
-let info = null, href = null, macHref = null;
+let info = null, href = null, macHref = null, botHref = null;
 // Windows zip and macOS zip (Draco.app); the visitor's system comes first, the other one stays one click away.
 // Until a Mac zip is published (latest.json without "mac"), the page stays the Windows-only one.
 let os = /Mac/i.test(navigator.platform || '') || /Mac OS X|Macintosh/.test(navigator.userAgent) ? 'mac' : 'win';
@@ -67,8 +84,17 @@ function renderSteps() {
   $('#instNote').innerHTML = t(mac ? 'dl.gatekeeper' : 'dl.smartscreen');
   document.querySelectorAll('[data-os]').forEach(b => { b.hidden = b.dataset.os === os; });
 }
+function renderBot() {
+  const bot = info && info !== 'error' ? info.bot : null;
+  $('#dlBot').innerHTML = `<a class="btn gold" href="bot/">${esc(t('dl.bot.phone'))}</a>`
+    + (bot && botHref ? `<a class="btn ghost" href="${esc(botHref)}" download>${esc(t('dl.bot.zip'))}</a>` : '');
+  $('#botMeta').innerHTML = bot
+    ? [bot.version ? t('dl.version', {v: 'v' + bot.version}) : '', bot.size ? size(bot.size) : '', bot.date ? t('dl.updated', {d: new Date(bot.date).toLocaleDateString(locale())}) : ''].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('')
+    : '';
+}
 function renderDownload() {
   renderSteps();
+  renderBot();
   if (info === 'error') { $('#dl').innerHTML = `<button class="btn fire big" disabled>${esc(t('dl.unavailable'))}</button>`; return; }
   const win = info.url ? {href, label: t('dl.btn'), version: info.version, size: info.size, date: info.date} : null;
   const mac = info.mac?.url ? {href: macHref, label: t('dl.btnMac'), version: info.mac.version, size: info.mac.size, date: info.mac.date} : null;
@@ -83,7 +109,7 @@ function renderDownload() {
 }
 document.querySelectorAll('[data-os]').forEach(b => b.onclick = () => { os = b.dataset.os; if (info) renderDownload(); else renderSteps(); });
 renderSteps();
-api('/api/download').then(async d => { info = d; if (d.url) href = await apiUrl(d.url); if (d.mac?.url) macHref = await apiUrl(d.mac.url); renderDownload(); }).catch(() => { info = 'error'; renderDownload(); });
+api('/api/download').then(async d => { info = d; if (d.url) href = await apiUrl(d.url); if (d.mac?.url) macHref = await apiUrl(d.mac.url); if (d.bot?.url) botHref = await apiUrl(d.bot.url); renderDownload(); }).catch(() => { info = 'error'; renderDownload(); });
 document.addEventListener('langchange', () => { if (info) renderDownload(); else renderSteps(); });
 </script>
 </body>
