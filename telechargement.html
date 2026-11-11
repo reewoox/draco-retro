@@ -28,42 +28,63 @@
     <div class="dl-box">
       <div class="eyebrow" data-i18n="dl.eyebrow"></div>
       <h1 style="margin:0" data-i18n="dl.h1"></h1>
-      <p style="color:#d9c8b3;margin:0" data-i18n="dl.p"></p>
-      <div id="dl"><button class="btn fire big" disabled data-i18n="loading"></button></div>
+      <p id="dlP" style="color:#d9c8b3;margin:0" data-i18n="dl.p"></p>
+      <div id="dl" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center"><button class="btn fire big" disabled data-i18n="loading"></button></div>
       <div class="meta" id="meta"></div>
-      <h3 style="font-family:var(--display);color:var(--gold2);margin:10px 0 0" data-i18n="dl.install"></h3>
-      <ol class="steps">
-        <li data-i18n-html="dl.s1"></li>
-        <li data-i18n-html="dl.s2"></li>
-        <li data-i18n-html="dl.s3"></li>
-      </ol>
-      <p style="margin:0;color:var(--muted);font-size:14px" data-i18n-html="dl.smartscreen"></p>
+      <h3 id="instTitle" style="font-family:var(--display);color:var(--gold2);margin:10px 0 0" data-i18n="dl.install"></h3>
+      <ol class="steps" id="steps"></ol>
+      <p id="instNote" style="margin:0;color:var(--muted);font-size:14px"></p>
+      <p id="osSwitch" hidden style="margin:0;color:var(--muted);font-size:14px;gap:8px;align-items:center;flex-wrap:wrap"><span data-i18n="dl.otherOs"></span>
+        <button type="button" class="btn small ghost" data-os="win">Windows</button><button type="button" class="btn small ghost" data-os="mac">Mac</button></p>
     </div>
     <div class="crest"><img src="assets/logo.png" alt="Draco Retro"></div>
   </div>
   <div class="wrap grid3" style="margin-top:40px">
-    <div class="card"><h3 data-i18n="dl.c1.h"></h3><p data-i18n="dl.c1.p"></p></div>
+    <div class="card"><h3 data-i18n="dl.c1.h"></h3><p id="dlC1" data-i18n="dl.c1.p"></p></div>
     <div class="card"><h3 data-i18n="dl.c2.h"></h3><p data-i18n="dl.c2.p"></p></div>
     <div class="card"><h3 data-i18n="dl.c3.h"></h3><p data-i18n="dl.c3.p"></p></div>
   </div>
 </main>
-<script src="assets/i18n.js?v=9bd1e9d5f1"></script>
-<script src="assets/i18n-x.js?v=a978bbcc8f"></script>
-<script src="assets/i18n-x2.js?v=896a34372d"></script>
+<script src="assets/i18n.js?v=5d2a72fe2c"></script>
+<script src="assets/i18n-x.js?v=fb3c393f10"></script>
+<script src="assets/i18n-x2.js?v=fe413aaf1e"></script>
 <script src="assets/site.js?v=43d1dcde55"></script>
 <script>
 header('telechargement');
 const size = b => b > 1e9 ? (b / 1e9).toLocaleString(locale(), {maximumFractionDigits: 1}) + ' ' + t('unit.gb') : Math.round(b / 1e6) + ' ' + t('unit.mb');
-let info = null, href = null;
+let info = null, href = null, macHref = null;
+// Windows zip and macOS zip (Draco.app); the visitor's system comes first, the other one stays one click away.
+// Until a Mac zip is published (latest.json without "mac"), the page stays the Windows-only one.
+let os = /Mac/i.test(navigator.platform || '') || /Mac OS X|Macintosh/.test(navigator.userAgent) ? 'mac' : 'win';
+const macReady = () => !!(info && info !== 'error' && info.mac?.url);
+function renderSteps() {
+  const mac = macReady() && os === 'mac';
+  $('#osSwitch').hidden = !macReady(); $('#osSwitch').style.display = macReady() ? 'flex' : '';
+  $('#dlP').dataset.i18n = macReady() ? 'dl.pMac' : 'dl.p'; $('#dlC1').dataset.i18n = macReady() ? 'dl.c1.pMac' : 'dl.c1.p';
+  $('#dlP').textContent = t($('#dlP').dataset.i18n); $('#dlC1').textContent = t($('#dlC1').dataset.i18n);
+  $('#instTitle').textContent = t(!macReady() ? 'dl.install' : mac ? 'dl.installMac' : 'dl.installWin');
+  $('#steps').innerHTML = (mac ? ['dl.m1', 'dl.m2', 'dl.m3', 'dl.m4'] : ['dl.s1', 'dl.s2', 'dl.s3']).map(k => `<li>${t(k)}</li>`).join('');
+  $('#instNote').innerHTML = t(mac ? 'dl.gatekeeper' : 'dl.smartscreen');
+  document.querySelectorAll('[data-os]').forEach(b => { b.hidden = b.dataset.os === os; });
+}
 function renderDownload() {
+  renderSteps();
   if (info === 'error') { $('#dl').innerHTML = `<button class="btn fire big" disabled>${esc(t('dl.unavailable'))}</button>`; return; }
-  if (!info.url) { $('#dl').innerHTML = `<button class="btn fire big" disabled>${esc(t('dl.soon'))}</button>`; $('#meta').textContent = t('dl.soonP'); return; }
-  $('#dl').innerHTML = `<a class="btn fire big" href="${esc(href)}" download>${esc(t('dl.btn'))}</a>`;
-  $('#meta').innerHTML = [info.version ? t('dl.version', {v: info.version}) : '', info.size ? size(info.size) : '', info.date ? t('dl.updated', {d: new Date(info.date).toLocaleDateString(locale())}) : '']
+  const win = info.url ? {href, label: t('dl.btn'), version: info.version, size: info.size, date: info.date} : null;
+  const mac = info.mac?.url ? {href: macHref, label: t('dl.btnMac'), version: info.mac.version, size: info.mac.size, date: info.mac.date} : null;
+  if (!win && !mac) { $('#dl').innerHTML = `<button class="btn fire big" disabled>${esc(t('dl.soon'))}</button>`; $('#meta').textContent = t('dl.soonP'); return; }
+  const [first, second] = macReady() && os === 'mac' ? [mac, win] : [win, mac];
+  const button = (p, cls) => `<a class="btn ${cls}" href="${esc(p.href)}" download>${esc(p.label)}</a>`;
+  $('#dl').innerHTML = (first ? button(first, 'fire big') : `<button class="btn fire big" disabled>${esc(t(os === 'mac' ? 'dl.macSoon' : 'dl.soon'))}</button>`)
+    + (second ? button(second, 'ghost') : '');
+  const shown = first || second;
+  $('#meta').innerHTML = [shown.version ? t('dl.version', {v: shown.version}) : '', shown.size ? size(shown.size) : '', shown.date ? t('dl.updated', {d: new Date(shown.date).toLocaleDateString(locale())}) : '']
     .filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
 }
-api('/api/download').then(async d => { info = d; if (d.url) href = await apiUrl(d.url); renderDownload(); }).catch(() => { info = 'error'; renderDownload(); });
-document.addEventListener('langchange', () => { if (info) renderDownload(); });
+document.querySelectorAll('[data-os]').forEach(b => b.onclick = () => { os = b.dataset.os; if (info) renderDownload(); else renderSteps(); });
+renderSteps();
+api('/api/download').then(async d => { info = d; if (d.url) href = await apiUrl(d.url); if (d.mac?.url) macHref = await apiUrl(d.mac.url); renderDownload(); }).catch(() => { info = 'error'; renderDownload(); });
+document.addEventListener('langchange', () => { if (info) renderDownload(); else renderSteps(); });
 </script>
 </body>
 </html>

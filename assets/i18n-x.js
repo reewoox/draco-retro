@@ -24,7 +24,7 @@ add('fr', {
   'space.events.h': 'Événements', 'space.events.p': 'Calendrier, speedrush, paris en ogrines et bonus XP/drop.',
   // ladder
   'ladder.title': 'Classements — Draco Retro', 'rk.p': 'Les meilleurs aventuriers de Draco, par catégorie.',
-  'rk.level': 'Niveau', 'rk.xp': 'Expérience', 'rk.successes': 'Succès', 'rk.kamas': 'Kamas', 'rk.honor': 'Honneur', 'rk.kills': 'Victoires PvP', 'rk.guilds': 'Guildes', 'rk.votes': 'Votes',
+  'rk.level': 'Niveau', 'rk.xp': 'Expérience', 'rk.successes': 'Succès', 'rk.successPoints': 'Points de succès', 'rk.kamas': 'Kamas', 'rk.honor': 'Honneur', 'rk.kills': 'Victoires PvP', 'rk.guilds': 'Guildes', 'rk.votes': 'Votes',
   'rk.allClasses': 'Toutes', 'rk.guild': 'Guilde', 'rk.player': 'Joueur', 'rk.members': '{n} membres',
   // encyclopedia
   'wiki.title': 'Encyclopédie — Draco Retro', 'wiki.h1': 'Encyclopédie', 'wiki.p': 'Tous les objets et monstres de Draco : effets, recettes, panoplies et drops.',
@@ -118,7 +118,7 @@ add('en', {
   'space.wiki.h': 'Encyclopedia', 'space.wiki.p': 'Items, effects, recipes, sets, monsters and their drops.',
   'space.events.h': 'Events', 'space.events.p': 'Calendar, speedrush, ogrine bets and XP/drop bonuses.',
   'ladder.title': 'Rankings — Draco Retro', 'rk.p': 'The best adventurers of Draco, by category.',
-  'rk.level': 'Level', 'rk.xp': 'Experience', 'rk.successes': 'Achievements', 'rk.kamas': 'Kamas', 'rk.honor': 'Honour', 'rk.kills': 'PvP wins', 'rk.guilds': 'Guilds', 'rk.votes': 'Votes',
+  'rk.level': 'Level', 'rk.xp': 'Experience', 'rk.successes': 'Achievements', 'rk.successPoints': 'Achievement points', 'rk.kamas': 'Kamas', 'rk.honor': 'Honour', 'rk.kills': 'PvP wins', 'rk.guilds': 'Guilds', 'rk.votes': 'Votes',
   'rk.allClasses': 'All', 'rk.guild': 'Guild', 'rk.player': 'Player', 'rk.members': '{n} members',
   'wiki.title': 'Encyclopedia — Draco Retro', 'wiki.h1': 'Encyclopedia', 'wiki.p': 'Every item and monster of Draco: effects, recipes, sets and drops.',
   'wiki.items': 'Items', 'wiki.monsters': 'Monsters', 'wiki.search': 'Search a name…', 'wiki.allTypes': 'All types', 'wiki.level': 'Level',
