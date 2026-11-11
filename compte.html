@@ -33,6 +33,9 @@
 .inv-item{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 .inv-item:last-child{border-bottom:0}
 .inv-item input{accent-color:var(--gold);width:18px;height:18px}
+.bulk{border-color:var(--gold)}
+.basepick{display:flex;gap:8px;align-items:stretch}.basepick input{flex:1;min-width:0}
+.bulk-pre{color:var(--muted);font-size:13px;margin-top:-6px}.bulk-pre.bad{color:#f19b98}
 </style>
 </head>
 <body>
@@ -62,9 +65,9 @@
     </div>
   </div>
 </main>
-<script src="assets/i18n.js?v=e85817fd89"></script>
-<script src="assets/i18n-x.js?v=9e3d325a49"></script>
-<script src="assets/i18n-x2.js?v=0f35ec829a"></script>
+<script src="assets/i18n.js?v=9bd1e9d5f1"></script>
+<script src="assets/i18n-x.js?v=a978bbcc8f"></script>
+<script src="assets/i18n-x2.js?v=896a34372d"></script>
 <script src="assets/site.js?v=43d1dcde55"></script>
 <script>
 header('compte');
@@ -78,6 +81,41 @@ const charOptions = list => list.map(c => `<option value="${c.id}">${esc(c.name)
 const charOf = p => `<span class="who"><img src="${classImg(p.class_id, p.sex)}" alt="">${esc(p.name)}</span>`;
 const srcKind = s => !s || s === 'launcher' ? 'shop' : /^(vote|palier)/.test(s) ? 'vote' : s.startsWith('loterie') ? 'lottery' : s.startsWith('code') ? 'code' : 'other';
 const accountsList = () => cache.profile?.accounts || [];
+// "1 click": game accounts completed up to 8 (one full hero team) or 16 (two), named base01/Base-A, base02/Base-B…
+const BULK_TARGETS = [8, 16], BULK_BASE = /^[A-Za-z][A-Za-z-]{2,16}$/;
+function randomBase() {
+  const pick = list => list[Math.floor(Math.random() * list.length)];
+  return pick(['Dra', 'Kra', 'Syl', 'Mor', 'Ael', 'Tor', 'Zan', 'Bel', 'Gor', 'Iri', 'Val', 'Nor', 'Kal', 'Fen', 'Lys', 'Rha', 'Oth', 'Vor', 'Ely', 'Sha', 'Tal', 'Bra', 'Cel', 'Esk'])
+    + pick(['', 'a', 'e', 'i', 'o', 'y', 'ae', 'ia', 'or', 'en'])
+    + pick(['nor', 'rak', 'mir', 'las', 'dor', 'wyn', 'ros', 'thar', 'kos', 'len', 'rim', 'ven', 'dil', 'gar', 'zul', 'mus', 'nis', 'rok']);
+}
+const bulkLetters = n => { let s = ''; for (; n > 0; n = Math.floor((n - 1) / 26)) s = String.fromCharCode(65 + (n - 1) % 26) + s; return s; };
+function bulkPreview(raw) {
+  const base = String(raw || '').trim().replace(/-+$/, '');
+  if (!BULK_BASE.test(base)) return {ok: false, text: t('bulk.rule')};
+  // First two numbers the server will use: those already taken by this Draco account are skipped (as on the server).
+  const cap = base[0].toUpperCase() + base.slice(1), login = i => base.toLowerCase() + String(i).padStart(2, '0');
+  const mine = new Set((cache.me?.accounts || []).map(a => String(a.name).toLowerCase())), free = [];
+  for (let i = 1; free.length < 2 && i < 100; i++) if (!mine.has(login(i))) free.push(i);
+  return {ok: true, text: t('bulk.preview', {l1: login(free[0]), l2: login(free[1]), p1: cap + '-' + bulkLetters(free[0]), p2: cap + '-' + bulkLetters(free[1])})};
+}
+function bulkForm(n, max) {
+  if (n >= max) return '';
+  if (cache.bulkBase == null) cache.bulkBase = randomBase();
+  const pre = bulkPreview(cache.bulkBase);
+  return `<form class="form bulk" id="bulkForm" novalidate>
+    <h3 style="margin:0;color:var(--gold2)">⚡ ${esc(t('bulk.h'))}</h3>
+    <p style="margin:0;color:var(--muted);font-size:14px">${esc(n ? t(n === 1 ? 'bulk.more1' : 'bulk.moreN', {n}) : t('bulk.p'))}</p>
+    <div class="grid2">
+      <label><span>${esc(t('bulk.base'))}</span><span class="basepick"><input type="text" name="base" maxlength="17" autocomplete="off" spellcheck="false" value="${esc(cache.bulkBase)}"><button type="button" class="btn small" id="bulkDice" title="${esc(t('bulk.dice'))}" aria-label="${esc(t('bulk.dice'))}">🎲</button></span></label>
+      <label><span>${esc(t('bulk.pw'))}</span><input type="password" name="password" maxlength="72" autocomplete="current-password"></label>
+    </div>
+    <div class="bulk-pre ${pre.ok ? '' : 'bad'}" id="bulkPreview">${esc(pre.text)}</div>
+    <small class="muted" style="margin-top:-6px">${esc(t('bulk.pwHint'))}</small>
+    <div class="alert error" data-err hidden></div>
+    <div class="row">${BULK_TARGETS.filter(x => x > n && x <= max).map(x => `<button class="btn gold" value="${x}">${esc(n ? t('bulk.btnMore', {n: x - n, total: x}) : t('bulk.btn', {total: x}))}</button>`).join('')}</div>
+  </form>`;
+}
 
 // ---------------------------------------------------------------- views
 const views = {
@@ -118,6 +156,7 @@ const views = {
           <div class="row"><button class="btn small" data-gpw="${a.id}" data-name="${esc(a.name)}">${esc(t('acc.gamePwChange'))}</button><button class="btn small" data-unlink="${a.id}" data-name="${esc(a.name)}">${esc(t('acc.unlink'))}</button></div></div>
         ${a.players.length ? `<div class="chars">${a.players.map(p => `<span class="chr" title="${esc(className(p.class_id))}"><img src="${classImg(p.class_id, p.sex)}" alt=""><span>${esc(p.name)}</span><b>${Number(p.level)}</b></span>`).join('')}</div>` : `<small class="muted">${esc(t('acc.nochar'))}</small>`}
       </div>`).join('') : `<p class="muted" style="margin:0">${esc(t('acc.none'))}</p>`}
+      ${bulkForm(d.accounts.length, d.max)}
       <div class="alert info">${esc(t('acc.heroHint'))}</div>
       <div class="grid2">
         <form class="form" id="createForm" novalidate>
@@ -267,6 +306,19 @@ document.addEventListener('submit', e => {
   const f = e.target; if (f.id === 'loginForm' || !f.closest('#view')) return; e.preventDefault();
   const d = Object.fromEntries(new FormData(f));
   if (f.id === 'createForm') run(f, async () => { const r = await post('/api/master/accounts/create', {token: getToken(), ...d}); notice(t('acc.created', {name: r.name})); await refreshAll(); });
+  if (f.id === 'bulkForm') {
+    // Enter in a field submits with the first button: the smallest total still above the current count.
+    const n = cache.me?.accounts.length || 0, buttons = f.querySelectorAll('button');
+    let target = Number(e.submitter?.value);
+    if (!BULK_TARGETS.includes(target) || target <= n) target = BULK_TARGETS.find(x => x > n);
+    buttons.forEach(b => { b.disabled = true; });
+    run(f, async () => {
+      const r = await post('/api/master/accounts/bulk', {token: getToken(), base: d.base, password: d.password, target});
+      const c = r.created; cache.bulkBase = null;
+      notice(t(c.length === 1 ? 'bulk.ok1' : 'bulk.okN', {n: c.length, first: c[0]?.name || '', last: c[c.length - 1]?.name || ''}));
+      await refreshAll();
+    }).finally(() => buttons.forEach(b => { b.disabled = false; }));
+  }
   if (f.id === 'linkForm') run(f, async () => { const r = await post('/api/master/accounts/link', {token: getToken(), ...d}); notice(t('acc.linked', {name: r.name})); await refreshAll(); });
   if (f.id === 'claimForm') run(f, async () => { const ids = [...f.querySelectorAll('[name=ids]:checked')].map(i => Number(i.value)); const r = await x('inventoryClaim', {ids, player: Number(d.player)}); notice(t('inv.sent', {n: r.sent, name: r.player})); await load('inventaire', true); });
   if (f.id === 'bankForm') run(f, async () => { const r = await x('bakSendKamas', {player: Number(d.player), kamas: Number(d.kamas)}); notice(t('bak.sent', {n: fmt(r.kamas), name: r.player})); await load('inventaire', true); loaded.delete('apercu'); });
@@ -274,7 +326,16 @@ document.addEventListener('submit', e => {
   if (f.id === 'pwForm') run(f, async () => { if (d.password !== d.confirm) throw new Error(t('err.pwMatch')); await post('/api/master/password', {token: getToken(), current: d.current, password: d.password}); f.reset(); notice(t('sec.ok')); });
 });
 document.addEventListener('change', e => { if (e.target.id === 'rewAccount') cache.rewAccount = Number(e.target.value); });
+document.addEventListener('input', e => {
+  if (!e.target.matches('#bulkForm [name=base]')) return;
+  cache.bulkBase = e.target.value;
+  const p = bulkPreview(e.target.value), box = $('#bulkPreview'); box.textContent = p.text; box.classList.toggle('bad', !p.ok);
+});
 document.addEventListener('click', e => {
+  if (e.target.closest('#bulkDice')) {
+    const input = $('#bulkForm [name=base]'); input.value = randomBase();
+    input.dispatchEvent(new Event('input', {bubbles: true})); return;
+  }
   const goBtn = e.target.closest('[data-go]'); if (goBtn) return go(goBtn.dataset.go);
   const h = e.target.closest('[data-hist]'); if (h) { histTab = h.dataset.hist; return render(); }
   const unlink = e.target.closest('[data-unlink]');
